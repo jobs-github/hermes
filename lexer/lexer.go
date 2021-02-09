@@ -44,38 +44,56 @@ func (this *Lexer) skipWhitespace() {
 	}
 }
 
+func (this *Lexer) twoCharToken(tokenType token.TokenType, expectedNextChar byte, tokenType2 token.TokenType, literal string) *token.Token {
+	if expectedNextChar == this.peekChar() {
+		this.readChar()
+		return &token.Token{Type: tokenType2, Literal: literal}
+	} else {
+		return newToken(tokenType, this.ch)
+	}
+}
+
 func (this *Lexer) NextToken() *token.Token {
 	var tok *token.Token
 	this.skipWhitespace()
-	switch this.ch {
-	case '=':
-		tok = newToken(token.ASSIGN, this.ch)
-	case ';':
-		tok = newToken(token.SEMICOLON, this.ch)
-	case '(':
-		tok = newToken(token.LPAREN, this.ch)
-	case ')':
-		tok = newToken(token.RPAREN, this.ch)
-	case ',':
-		tok = newToken(token.COMMA, this.ch)
-	case '+':
-		tok = newToken(token.ADD, this.ch)
-	case '{':
-		tok = newToken(token.LBRACE, this.ch)
-	case '}':
-		tok = newToken(token.RBRACE, this.ch)
-	case 0:
+
+	if 0 == this.ch {
 		return &token.Token{Type: token.EOF, Literal: ""}
+	}
+
+	switch this.ch {
+	case '+':
+		tok = this.twoCharToken(token.ADD, '+', token.INC, "++")
+	case '-':
+		tok = this.twoCharToken(token.SUB, '-', token.DEC, "--")
+	case '&':
+		tok = this.twoCharToken(token.ILLEGAL, '&', token.AND, "&&")
+	case '|':
+		tok = this.twoCharToken(token.ILLEGAL, '|', token.OR, "||")
+	case '=':
+		tok = this.twoCharToken(token.ASSIGN, '=', token.EQ, "==")
+	case '!':
+		tok = this.twoCharToken(token.NOT, '=', token.NEQ, "!=")
+	case '<':
+		tok = this.twoCharToken(token.LT, '=', token.LEQ, "<=")
+	case '>':
+		tok = this.twoCharToken(token.GT, '=', token.GEQ, ">=")
 	default:
-		if isLetter(this.ch) {
-			literal := this.readIdentifier()
-			return &token.Token{Type: token.LookupIdent(literal), Literal: literal}
-		} else if isDigit(this.ch) {
-			return &token.Token{Type: token.INT, Literal: this.readNumber()}
+		tt, ok := token.GetTokenType(this.ch)
+		if ok {
+			tok = newToken(tt, this.ch)
 		} else {
-			tok = newToken(token.ILLEGAL, this.ch)
+			if isLetter(this.ch) {
+				literal := this.readIdentifier()
+				return &token.Token{Type: token.LookupIdent(literal), Literal: literal}
+			} else if isDigit(this.ch) {
+				return &token.Token{Type: token.INT, Literal: this.readNumber()}
+			} else {
+				tok = newToken(token.ILLEGAL, this.ch)
+			}
 		}
 	}
+
 	this.readChar()
 	return tok
 }
@@ -94,6 +112,14 @@ func (this *Lexer) readIdentifier() string {
 		this.readChar()
 	}
 	return this.input[pos:this.position]
+}
+
+func (this *Lexer) peekChar() byte {
+	if this.nextPosition >= len(this.input) {
+		return 0
+	} else {
+		return this.input[this.nextPosition]
+	}
 }
 
 func (this *Lexer) readChar() {
