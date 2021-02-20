@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/jobs-github/hermes/lexer"
-	"github.com/jobs-github/hermes/token"
+	"hermes/lexer"
+	"hermes/token"
 )
 
 func repl(in io.Reader, out io.Writer) {

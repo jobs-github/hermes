@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"github.com/jobs-github/hermes/token"
+	"hermes/token"
 )
 
 type Lexer struct {
