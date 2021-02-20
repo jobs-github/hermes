@@ -1,17 +1,19 @@
 package token
 
+import "fmt"
+
 type TokenType uint
 
 const (
 	ILLEGAL TokenType = iota
 	EOF
 
-	literal_beg
+	//literal_beg
 	IDENT
 	INT
-	literal_end
+	//literal_end
 
-	operator_beg
+	//operator_beg
 	LT        // <
 	GT        // >
 	ASSIGN    // =
@@ -35,9 +37,9 @@ const (
 	RPAREN    // )
 	LBRACE    // {
 	RBRACE    // }
-	operator_end
+	//operator_end
 
-	keyword_beg
+	//keyword_beg
 	TRUE
 	FALSE
 	FUNC
@@ -45,7 +47,7 @@ const (
 	IF
 	ELSE
 	RETURN
-	keyword_end
+	//keyword_end
 )
 
 var (
@@ -69,7 +71,51 @@ var (
 		"else":   ELSE,
 		"return": RETURN,
 	}
+
+	tokenTypeStrings = map[TokenType]string{
+		EOF:       "EOF",
+		IDENT:     "IDENT",
+		INT:       "INT",
+		LT:        "LT",
+		GT:        "GT",
+		ASSIGN:    "ASSIGN",
+		NOT:       "NOT",
+		ADD:       "ADD",
+		SUB:       "SUB",
+		MUL:       "MUL",
+		DIV:       "DIV",
+		MOD:       "MOD",
+		EQ:        "EQ",
+		NEQ:       "NEQ",
+		LEQ:       "LEQ",
+		GEQ:       "GEQ",
+		AND:       "AND",
+		OR:        "OR",
+		INC:       "INC",
+		DEC:       "DEC",
+		COMMA:     "COMMA",
+		SEMICOLON: "SEMICOLON",
+		LPAREN:    "LPAREN",
+		RPAREN:    "RPAREN",
+		LBRACE:    "LBRACE",
+		RBRACE:    "RBRACE",
+		TRUE:      "TRUE",
+		FALSE:     "FALSE",
+		FUNC:      "FUNC",
+		VAR:       "VAR",
+		IF:        "IF",
+		ELSE:      "ELSE",
+		RETURN:    "RETURN",
+	}
 )
+
+func ToString(t TokenType) string {
+	s, ok := tokenTypeStrings[t]
+	if ok {
+		return s
+	}
+	return "ILLEGAL"
+}
 
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
@@ -81,6 +127,10 @@ func LookupIdent(ident string) TokenType {
 type Token struct {
 	Type    TokenType
 	Literal string
+}
+
+func (this *Token) String() string {
+	return fmt.Sprintf("{\"type\":\"%v\",\"literal\":\"%v\"}", ToString(this.Type), this.Literal)
 }
 
 func GetTokenType(ch byte) (TokenType, bool) {
