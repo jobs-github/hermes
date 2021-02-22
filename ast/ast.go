@@ -33,23 +33,23 @@ func (this *Program) TokenLiteral() string {
 
 // Identifier : implement Expression
 type Identifier struct {
-	tok   *token.Token
-	value string
+	Tok   *token.Token
+	Value string
 }
 
 func (this *Identifier) expressionNode() {}
 func (this *Identifier) TokenLiteral() string {
-	return this.tok.Literal
+	return this.Tok.Literal
 }
 
 // VarStatement : implement Expression
 type VarStatement struct {
-	tok   *token.Token
-	name  *Identifier
-	value Expression
+	Tok   *token.Token
+	Name  *Identifier
+	Value Expression
 }
 
 func (this *VarStatement) statementNode() {}
 func (this *VarStatement) TokenLiteral() string {
-	return this.tok.Literal
+	return this.Tok.Literal
 }

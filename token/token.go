@@ -129,6 +129,14 @@ type Token struct {
 	Literal string
 }
 
+func (this *Token) TypeIs(t TokenType) bool {
+	return this.Type == t
+}
+
+func (this *Token) Eof() bool {
+	return this.Type == EOF
+}
+
 func (this *Token) String() string {
 	return fmt.Sprintf("{\"type\":\"%v\",\"literal\":\"%v\"}", ToString(this.Type), this.Literal)
 }
