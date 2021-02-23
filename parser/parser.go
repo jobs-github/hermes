@@ -51,6 +51,8 @@ func (this *Parser) parseStmt() ast.Statement {
 	switch this.curTok.Type {
 	case token.VAR:
 		return this.parseVarStmt()
+	case token.RETURN:
+		return this.parseReturnStmt()
 	default:
 		return nil
 	}
@@ -74,6 +76,16 @@ func (this *Parser) parseVarStmt() ast.Statement {
 	if !this.expectPeek(token.ASSIGN) {
 		return nil
 	}
+
+	for !this.curTok.TypeIs(token.SEMICOLON) {
+		this.nextToken()
+	}
+	return stmt
+}
+
+func (this *Parser) parseReturnStmt() ast.Statement {
+	stmt := &ast.ReturnStatement{Tok: this.curTok}
+	this.nextToken()
 
 	for !this.curTok.TypeIs(token.SEMICOLON) {
 		this.nextToken()

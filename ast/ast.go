@@ -42,7 +42,7 @@ func (this *Identifier) TokenLiteral() string {
 	return this.Tok.Literal
 }
 
-// VarStatement : implement Expression
+// VarStatement : implement Statement
 type VarStatement struct {
 	Tok   *token.Token
 	Name  *Identifier
@@ -51,5 +51,16 @@ type VarStatement struct {
 
 func (this *VarStatement) statementNode() {}
 func (this *VarStatement) TokenLiteral() string {
+	return this.Tok.Literal
+}
+
+// ReturnStatement : implement Statement
+type ReturnStatement struct {
+	Tok         *token.Token
+	ReturnValue Expression
+}
+
+func (this *ReturnStatement) statementNode() {}
+func (this *ReturnStatement) TokenLiteral() string {
 	return this.Tok.Literal
 }
