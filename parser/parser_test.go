@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"hermes/ast"
 	"hermes/lexer"
 	"reflect"
@@ -163,5 +164,60 @@ func TestIntExpr(t *testing.T) {
 	}
 	if literal.TokenLiteral() != "5" {
 		t.Errorf("literal.TokenLiteral() != `5`, got %v", literal.TokenLiteral())
+	}
+}
+
+func testIntegerLiteral(t *testing.T, expr ast.Expression, val int64) bool {
+	iv, ok := expr.(*ast.IntegerLiteral)
+	if !ok {
+		t.Errorf("expr not *ast.IntegerLiteral, got %v", reflect.TypeOf(expr).String())
+		return false
+	}
+	if iv.Value != val {
+		t.Errorf("val not %v, got %v", val, iv.Value)
+		return false
+	}
+	if iv.TokenLiteral() != fmt.Sprintf("%v", val) {
+		t.Errorf("TokenLiteral not %v, got %v", val, iv.TokenLiteral())
+		return false
+	}
+	return true
+}
+
+func TestParsingPrefixExpressions(t *testing.T) {
+	cases := []struct {
+		input string
+		op    string
+		val   int64
+	}{
+		{"!5;", "!", 5},
+		{"-15;", "-", 15},
+	}
+	for _, tt := range cases {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		if nil == program {
+			t.Fatalf("program is nil")
+		}
+		checkParserErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+		}
+		expr, ok := stmt.Expr.(*ast.PrefixExpression)
+		if !ok {
+			t.Fatalf("Expr is not *ast.PrefixExpression, got %v", reflect.TypeOf(stmt.Expr).String())
+		}
+		if expr.Op != tt.op {
+			t.Errorf("expr.Op != %v, got %v", tt.op, expr.Op)
+		}
+		if testIntegerLiteral(t, expr.Right, tt.val) {
+			return
+		}
 	}
 }

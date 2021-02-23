@@ -37,6 +37,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = map[token.TokenType]prefixParseFn{
 		token.IDENT: p.parseIdentifier,
 		token.INT:   p.parseIntegerLiteral,
+		token.NOT:   p.parsePrefixExpression,
+		token.SUB:   p.parsePrefixExpression,
 	}
 	// init curTok & peekTok
 	p.nextToken()
@@ -143,8 +145,19 @@ func (this *Parser) parseIntegerLiteral() ast.Expression {
 func (this *Parser) parseExpression(precedence int) ast.Expression {
 	prefixFn := this.prefixParseFns[this.curTok.Type]
 	if nil == prefixFn {
+		this.appendError(fmt.Sprintf("%v has no prefix fn", token.ToString(this.curTok.Type)))
 		return nil
 	}
 	leftExpr := prefixFn()
 	return leftExpr
+}
+
+func (this *Parser) parsePrefixExpression() ast.Expression {
+	expr := &ast.PrefixExpression{
+		Tok: this.curTok,
+		Op:  this.curTok.Literal,
+	}
+	this.nextToken()
+	expr.Right = this.parseExpression(PREFIX)
+	return expr
 }

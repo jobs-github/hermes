@@ -130,3 +130,22 @@ func (this *IntegerLiteral) TokenLiteral() string {
 func (this *IntegerLiteral) String() string {
 	return this.Tok.Literal
 }
+
+type PrefixExpression struct {
+	Tok   *token.Token
+	Op    string
+	Right Expression
+}
+
+func (this *PrefixExpression) expressionNode() {}
+func (this *PrefixExpression) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *PrefixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(this.Op)
+	out.WriteString(this.Right.String())
+	out.WriteString(")")
+	return out.String()
+}
