@@ -116,3 +116,17 @@ func (this *ExpressionStatement) String() string {
 	}
 	return ""
 }
+
+// IntegerLiteral : implement Expression
+type IntegerLiteral struct {
+	Tok   *token.Token
+	Value int64
+}
+
+func (this *IntegerLiteral) expressionNode() {}
+func (this *IntegerLiteral) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *IntegerLiteral) String() string {
+	return this.Tok.Literal
+}

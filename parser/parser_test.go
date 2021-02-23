@@ -103,3 +103,65 @@ func TestReturnStatements(t *testing.T) {
 		}
 	}
 }
+
+func TestIdentExpr(t *testing.T) {
+	input := `foobar;`
+
+	l := lexer.New(input)
+	p := New(l)
+
+	program := p.ParseProgram()
+	if nil == program {
+		t.Fatalf("program is nil")
+	}
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+	}
+	ident, ok := stmt.Expr.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("Expr is not *ast.Identifier, got %v", reflect.TypeOf(stmt.Expr).String())
+	}
+	if ident.Value != "foobar" {
+		t.Errorf("ident.Value != `foobar`, got %v", ident.Value)
+	}
+	if ident.TokenLiteral() != "foobar" {
+		t.Errorf("ident.TokenLiteral() != `foobar`, got %v", ident.TokenLiteral())
+	}
+}
+
+func TestIntExpr(t *testing.T) {
+	input := `5;`
+
+	l := lexer.New(input)
+	p := New(l)
+
+	program := p.ParseProgram()
+	if nil == program {
+		t.Fatalf("program is nil")
+	}
+	checkParserErrors(t, p)
+	if len(program.Statements) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+	}
+	literal, ok := stmt.Expr.(*ast.IntegerLiteral)
+	if !ok {
+		t.Fatalf("Expr is not *ast.Identifier, got %v", reflect.TypeOf(stmt.Expr).String())
+	}
+	if literal.Value != 5 {
+		t.Errorf("literal.Value != 5, got %v", literal.Value)
+	}
+	if literal.TokenLiteral() != "5" {
+		t.Errorf("literal.TokenLiteral() != `5`, got %v", literal.TokenLiteral())
+	}
+}
