@@ -28,6 +28,18 @@ func testVarStatements(t *testing.T, s ast.Statement, name string) bool {
 	return true
 }
 
+func checkParserErrors(t *testing.T, p *Parser) {
+	errs := p.Errors()
+	if len(errs) < 1 {
+		return
+	}
+	t.Errorf("parser has %v errors", len(errs))
+	for _, msg := range errs {
+		t.Errorf("parser error: %v", msg)
+	}
+	t.FailNow()
+}
+
 func TestVarStatements(t *testing.T) {
 	input := `
 	var x = 5;
@@ -41,6 +53,7 @@ func TestVarStatements(t *testing.T) {
 	if nil == program {
 		t.Fatalf("program is nil")
 	}
+	checkParserErrors(t, p)
 	if len(program.Statements) != 3 {
 		t.Fatalf("number of program Statements: %v", len(program.Statements))
 	}
