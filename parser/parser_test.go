@@ -221,3 +221,52 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestParsingInfixExpressions(t *testing.T) {
+	cases := []struct {
+		input string
+		left  int64
+		op    string
+		right int64
+	}{
+		{"5 + 5;", 5, "+", 5},
+		{"5 - 5;", 5, "-", 5},
+		{"5 * 5;", 5, "*", 5},
+		{"5 / 5;", 5, "/", 5},
+		{"5 > 5;", 5, ">", 5},
+		{"5 < 5;", 5, "<", 5},
+		{"5 == 5;", 5, "==", 5},
+		{"5 != 5;", 5, "!=", 5},
+	}
+
+	for _, tt := range cases {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		if nil == program {
+			t.Fatalf("program is nil")
+		}
+		checkParserErrors(t, p)
+		if len(program.Statements) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+		}
+		expr, ok := stmt.Expr.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("Expr is not *ast.InfixExpression, got %v", reflect.TypeOf(stmt.Expr).String())
+		}
+		if !testIntegerLiteral(t, expr.Left, tt.left) {
+			return
+		}
+		if expr.Op != tt.op {
+			t.Errorf("expr.Op != %v, got %v", tt.op, expr.Op)
+		}
+		if !testIntegerLiteral(t, expr.Right, tt.right) {
+			return
+		}
+	}
+}

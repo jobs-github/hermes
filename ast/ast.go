@@ -22,6 +22,7 @@ type Expression interface {
 
 type StatementSlice []Statement
 
+// Program : implement Node
 type Program struct {
 	Statements StatementSlice
 }
@@ -101,6 +102,7 @@ func (this *ReturnStatement) String() string {
 	return out.String()
 }
 
+// ExpressionStatement : implement Statement
 type ExpressionStatement struct {
 	Tok  *token.Token
 	Expr Expression
@@ -131,6 +133,7 @@ func (this *IntegerLiteral) String() string {
 	return this.Tok.Literal
 }
 
+// PrefixExpression : implement Expression
 type PrefixExpression struct {
 	Tok   *token.Token
 	Op    string
@@ -145,6 +148,30 @@ func (this *PrefixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
 	out.WriteString(this.Op)
+	out.WriteString(this.Right.String())
+	out.WriteString(")")
+	return out.String()
+}
+
+// InfixExpression : implement Expression
+type InfixExpression struct {
+	Tok   *token.Token
+	Left  Expression
+	Op    string
+	Right Expression
+}
+
+func (this *InfixExpression) expressionNode() {}
+func (this *InfixExpression) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *InfixExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(this.Left.String())
+	out.WriteString(" ")
+	out.WriteString(this.Op)
+	out.WriteString(" ")
 	out.WriteString(this.Right.String())
 	out.WriteString(")")
 	return out.String()
