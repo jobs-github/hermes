@@ -61,12 +61,13 @@ type Parser struct {
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l, errors: []string{}}
 	p.prefixParseFns = prefixParserMap{
-		token.IDENT: p.parseIdentifier,
-		token.INT:   p.parseIntegerLiteral,
-		token.TRUE:  p.parseBoolean,
-		token.FALSE: p.parseBoolean,
-		token.NOT:   p.parsePrefixExpression,
-		token.SUB:   p.parsePrefixExpression,
+		token.IDENT:  p.parseIdentifier,
+		token.INT:    p.parseIntegerLiteral,
+		token.TRUE:   p.parseBoolean,
+		token.FALSE:  p.parseBoolean,
+		token.NOT:    p.parsePrefixExpression,
+		token.SUB:    p.parsePrefixExpression,
+		token.LPAREN: p.parseGroupedExpression,
 	}
 	p.infixParseFns = infixParserMap{
 		token.LT:  p.parseInfixExpression,
@@ -230,6 +231,15 @@ func (this *Parser) parsePrefixExpression() ast.Expression {
 	}
 	this.nextToken()
 	expr.Right = this.parseExpression(PRECED_PREFIX)
+	return expr
+}
+
+func (this *Parser) parseGroupedExpression() ast.Expression {
+	this.nextToken()
+	expr := this.parseExpression(PRECED_LOWEST)
+	if !this.expectPeek(token.RPAREN) {
+		return nil
+	}
 	return expr
 }
 
