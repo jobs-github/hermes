@@ -14,7 +14,8 @@ const (
 	PRECED_OR     // ||
 	PRECED_AND    // &&
 	PRECED_EQ     // ==
-	PRECED_NEQ    // != < > >= <=
+	PRECED_NEQ    // !=
+	PRECED_LT     // < > >= <=
 	PRECED_ADD    // +
 	PRECED_MUL    // *
 	PRECED_PREFIX // -x !x
@@ -23,8 +24,8 @@ const (
 
 var (
 	precedences = map[token.TokenType]int{
-		token.LT: PRECED_NEQ,
-		token.GT: PRECED_NEQ,
+		token.LT: PRECED_LT,
+		token.GT: PRECED_LT,
 		// ASSIGN
 		// NOT
 		token.ADD: PRECED_ADD,
@@ -34,8 +35,8 @@ var (
 		token.MOD: PRECED_MUL,
 		token.EQ:  PRECED_EQ,
 		token.NEQ: PRECED_NEQ,
-		token.LEQ: PRECED_NEQ,
-		token.GEQ: PRECED_NEQ,
+		token.LEQ: PRECED_LT,
+		token.GEQ: PRECED_LT,
 		token.AND: PRECED_AND,
 		token.OR:  PRECED_OR,
 	}
@@ -66,6 +67,8 @@ func New(l *lexer.Lexer) *Parser {
 		token.SUB:   p.parsePrefixExpression,
 	}
 	p.infixParseFns = infixParserMap{
+		token.LT:  p.parseInfixExpression,
+		token.GT:  p.parseInfixExpression,
 		token.ADD: p.parseInfixExpression,
 		token.SUB: p.parseInfixExpression,
 		token.MUL: p.parseInfixExpression,
@@ -73,8 +76,10 @@ func New(l *lexer.Lexer) *Parser {
 		token.MOD: p.parseInfixExpression,
 		token.EQ:  p.parseInfixExpression,
 		token.NEQ: p.parseInfixExpression,
-		token.LT:  p.parseInfixExpression,
-		token.GT:  p.parseInfixExpression,
+		token.LEQ: p.parseInfixExpression,
+		token.GEQ: p.parseInfixExpression,
+		token.AND: p.parseInfixExpression,
+		token.OR:  p.parseInfixExpression,
 	}
 	// init curTok & peekTok
 	p.nextToken()
@@ -218,7 +223,7 @@ func (this *Parser) parsePrefixExpression() ast.Expression {
 		Op:  this.curTok.Literal,
 	}
 	this.nextToken()
-	expr.Right = this.parseExpression(PRECED_LOWEST)
+	expr.Right = this.parseExpression(PRECED_PREFIX)
 	return expr
 }
 

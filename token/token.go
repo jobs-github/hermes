@@ -29,8 +29,6 @@ const (
 	GEQ       // >=
 	AND       // &&
 	OR        // ||
-	INC       // ++
-	DEC       // --
 	COMMA     // ,
 	SEMICOLON // ;
 	LPAREN    // (
@@ -52,6 +50,8 @@ const (
 
 var (
 	tokenTypes = map[byte]TokenType{
+		'+': ADD,
+		'-': SUB,
 		'*': MUL,
 		'/': DIV,
 		'%': MOD,
@@ -91,8 +91,6 @@ var (
 		GEQ:       "GEQ",
 		AND:       "AND",
 		OR:        "OR",
-		INC:       "INC",
-		DEC:       "DEC",
 		COMMA:     "COMMA",
 		SEMICOLON: "SEMICOLON",
 		LPAREN:    "LPAREN",

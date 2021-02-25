@@ -62,10 +62,6 @@ func (this *Lexer) NextToken() *token.Token {
 	}
 
 	switch this.ch {
-	case '+':
-		tok = this.twoCharToken(token.ADD, '+', token.INC, "++")
-	case '-':
-		tok = this.twoCharToken(token.SUB, '-', token.DEC, "--")
 	case '&':
 		tok = this.twoCharToken(token.ILLEGAL, '&', token.AND, "&&")
 	case '|':

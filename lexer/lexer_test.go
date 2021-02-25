@@ -24,8 +24,6 @@ func TestLexer_NextToken(t *testing.T) {
 	10 != 9;
 	true && false;
 	true || false;
-	result++;
-	result--;
 	`
 
 	tests := []struct {
@@ -114,12 +112,6 @@ func TestLexer_NextToken(t *testing.T) {
 		{"79", token.OR, "||"},
 		{"80", token.FALSE, "false"},
 		{"81", token.SEMICOLON, ";"},
-		{"82", token.IDENT, "result"},
-		{"83", token.INC, "++"},
-		{"84", token.SEMICOLON, ";"},
-		{"85", token.IDENT, "result"},
-		{"86", token.DEC, "--"},
-		{"87", token.SEMICOLON, ";"},
 		{"EOF", token.EOF, ""},
 	}
 

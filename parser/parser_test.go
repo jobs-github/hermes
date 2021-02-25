@@ -270,3 +270,39 @@ func TestParsingInfixExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestOpPrecedParsing(t *testing.T) {
+	cases := []struct {
+		input string
+		want  string
+	}{
+		{"-a * b", "((-a) * b)"},
+		{"!-a", "(!(-a))"},
+		{"a + b + c", "((a + b) + c)"},
+		{"a + b - c", "((a + b) - c)"},
+		{"a * b * c", "((a * b) * c)"},
+		{"a * b / c", "((a * b) / c)"},
+		{"a + b / c", "(a + (b / c))"},
+		{"a + b % c", "(a + (b % c))"},
+		{"a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"},
+		{"3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"},
+		{"5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"},
+		{"5 >= 4 == 3 <= 4", "((5 >= 4) == (3 <= 4))"},
+		{"5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+		{"a && b || c", "((a && b) || c)"},
+	}
+	for _, tt := range cases {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		if nil == program {
+			t.Fatalf("program is nil")
+		}
+		checkParserErrors(t, p)
+		str := program.String()
+		if tt.want != str {
+			t.Errorf("expected %v, want %v", tt.want, str)
+		}
+	}
+}
