@@ -63,6 +63,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = prefixParserMap{
 		token.IDENT: p.parseIdentifier,
 		token.INT:   p.parseIntegerLiteral,
+		token.TRUE:  p.parseBoolean,
+		token.FALSE: p.parseBoolean,
 		token.NOT:   p.parsePrefixExpression,
 		token.SUB:   p.parsePrefixExpression,
 	}
@@ -196,6 +198,10 @@ func (this *Parser) parseIntegerLiteral() ast.Expression {
 	}
 	expr.Value = val
 	return expr
+}
+
+func (this *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Tok: this.curTok, Value: this.curTok.TypeIs(token.TRUE)}
 }
 
 func (this *Parser) parseExpression(precedence int) ast.Expression {

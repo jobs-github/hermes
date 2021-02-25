@@ -133,6 +133,20 @@ func (this *IntegerLiteral) String() string {
 	return this.Tok.Literal
 }
 
+// Boolean : implement Expression
+type Boolean struct {
+	Tok   *token.Token
+	Value bool
+}
+
+func (this *Boolean) expressionNode() {}
+func (this *Boolean) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *Boolean) String() string {
+	return this.Tok.Literal
+}
+
 // PrefixExpression : implement Expression
 type PrefixExpression struct {
 	Tok   *token.Token
