@@ -55,8 +55,8 @@ func TestVarStatements(t *testing.T) {
 		t.Fatalf("program is nil")
 	}
 	checkParserErrors(t, p)
-	if len(program.Statements) != 3 {
-		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	if len(program.Stmts) != 3 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
 	tests := []struct {
@@ -68,7 +68,7 @@ func TestVarStatements(t *testing.T) {
 		{"3", "foobar"},
 	}
 	for i, tt := range tests {
-		stmt := program.Statements[i]
+		stmt := program.Stmts[i]
 		if !testVarStatements(t, stmt, tt.want) {
 			return
 		}
@@ -89,11 +89,11 @@ func TestReturnStatements(t *testing.T) {
 		t.Fatalf("program is nil")
 	}
 	checkParserErrors(t, p)
-	if len(program.Statements) != 3 {
-		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	if len(program.Stmts) != 3 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	for _, stmt := range program.Statements {
+	for _, stmt := range program.Stmts {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
 			t.Errorf("stmt not *ast.ReturnStatement, got %v", reflect.TypeOf(stmt).String())
@@ -116,13 +116,13 @@ func TestIdentExpr(t *testing.T) {
 		t.Fatalf("program is nil")
 	}
 	checkParserErrors(t, p)
-	if len(program.Statements) != 1 {
-		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	if len(program.Stmts) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
 	ident, ok := stmt.Expr.(*ast.Identifier)
 	if !ok {
@@ -147,13 +147,13 @@ func TestIntExpr(t *testing.T) {
 		t.Fatalf("program is nil")
 	}
 	checkParserErrors(t, p)
-	if len(program.Statements) != 1 {
-		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	if len(program.Stmts) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
 	literal, ok := stmt.Expr.(*ast.IntegerLiteral)
 	if !ok {
@@ -229,13 +229,13 @@ func TestBoolExpr(t *testing.T) {
 		t.Fatalf("program is nil")
 	}
 	checkParserErrors(t, p)
-	if len(program.Statements) != 1 {
-		t.Fatalf("number of program Statements: %v", len(program.Statements))
+	if len(program.Stmts) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
 	literal, ok := stmt.Expr.(*ast.Boolean)
 	if !ok {
@@ -302,13 +302,13 @@ func TestParsingPrefixExpressions(t *testing.T) {
 			t.Fatalf("program is nil")
 		}
 		checkParserErrors(t, p)
-		if len(program.Statements) != 1 {
-			t.Fatalf("number of program Statements: %v", len(program.Statements))
+		if len(program.Stmts) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Stmts))
 		}
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
 		if !ok {
-			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 		}
 		expr, ok := stmt.Expr.(*ast.PrefixExpression)
 		if !ok {
@@ -351,13 +351,13 @@ func TestParsingInfixExpressions(t *testing.T) {
 			t.Fatalf("program is nil")
 		}
 		checkParserErrors(t, p)
-		if len(program.Statements) != 1 {
-			t.Fatalf("number of program Statements: %v", len(program.Statements))
+		if len(program.Stmts) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Stmts))
 		}
 
-		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
 		if !ok {
-			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Statements[0]).String())
+			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 		}
 		expr, ok := stmt.Expr.(*ast.InfixExpression)
 		if !ok {
@@ -417,5 +417,49 @@ func TestOpPrecedParsing(t *testing.T) {
 		if tt.want != str {
 			t.Errorf("expected %v, want %v", tt.want, str)
 		}
+	}
+}
+
+func TestIfExpression(t *testing.T) {
+	input := `if (x < y) { x }`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	if nil == program {
+		t.Fatalf("program is nil")
+	}
+	checkParserErrors(t, p)
+	if len(program.Stmts) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
+	}
+
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
+	}
+	expr, ok := stmt.Expr.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("Expr is not *ast.IfExpression, got %v", reflect.TypeOf(stmt.Expr).String())
+	}
+	if 1 != len(expr.Clauses) {
+		t.Fatalf("number of expr.Clauses: %v", len(expr.Clauses))
+	}
+
+	if !testInfixExpression(t, expr.Clauses[0].If, "x", "<", "y") {
+		return
+	}
+	if 1 != len(expr.Clauses[0].Then.Stmts) {
+		t.Fatalf("number of expr.Clauses[0].Then.Stmts: %v", len(expr.Clauses[0].Then.Stmts))
+	}
+	thenstmt := expr.Clauses[0].Then.Stmts[0]
+	then, ok := thenstmt.(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("stmt is not *ast.ExpressionStatement, got %v", reflect.TypeOf(thenstmt).String())
+	}
+	if !testIdentifier(t, then.Expr, "x") {
+		return
+	}
+	if expr.Else != nil {
+		t.Fatalf("expr.Else != nil")
 	}
 }

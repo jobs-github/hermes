@@ -68,6 +68,7 @@ func New(l *lexer.Lexer) *Parser {
 		token.NOT:    p.parsePrefixExpression,
 		token.SUB:    p.parsePrefixExpression,
 		token.LPAREN: p.parseGroupedExpression,
+		token.IF:     p.parseIfExpression,
 	}
 	p.infixParseFns = infixParserMap{
 		token.LT:  p.parseInfixExpression,
@@ -119,11 +120,11 @@ func (this *Parser) nextToken() {
 }
 
 func (this *Parser) ParseProgram() *ast.Program {
-	program := &ast.Program{Statements: ast.StatementSlice{}}
+	program := &ast.Program{Stmts: ast.StatementSlice{}}
 	for !this.curTok.Eof() {
 		stmt := this.parseStmt()
 		if nil != stmt {
-			program.Statements = append(program.Statements, stmt)
+			program.Stmts = append(program.Stmts, stmt)
 		}
 		this.nextToken()
 	}
@@ -139,6 +140,20 @@ func (this *Parser) parseStmt() ast.Statement {
 	default:
 		return this.parseExprStmt()
 	}
+}
+
+func (this *Parser) parseBlockStmt() *ast.BlockStatement {
+	block := &ast.BlockStatement{Tok: this.curTok}
+	block.Stmts = ast.StatementSlice{}
+	this.nextToken()
+	for !this.curTok.TypeIs(token.RBRACE) {
+		stmt := this.parseStmt()
+		if nil != stmt {
+			block.Stmts = append(block.Stmts, stmt)
+		}
+		this.nextToken()
+	}
+	return block
 }
 
 func (this *Parser) expectPeek(t token.TokenType) bool {
@@ -240,6 +255,35 @@ func (this *Parser) parseGroupedExpression() ast.Expression {
 	if !this.expectPeek(token.RPAREN) {
 		return nil
 	}
+	return expr
+}
+
+func (this *Parser) parseIfExpression() ast.Expression {
+	expr := &ast.IfExpression{Tok: this.curTok, Clauses: ast.IfClauseSlice{}}
+
+	clause := &ast.IfClause{}
+	if !this.expectPeek(token.LPAREN) {
+		return nil
+	}
+	this.nextToken()
+	clause.If = this.parseExpression(PRECED_LOWEST)
+	if !this.expectPeek(token.RPAREN) {
+		return nil
+	}
+	if !this.expectPeek(token.LBRACE) {
+		return nil
+	}
+	clause.Then = this.parseBlockStmt()
+	expr.Clauses = append(expr.Clauses, clause)
+
+	if this.peekTok.TypeIs(token.ELSE) {
+		this.nextToken()
+		if !this.expectPeek(token.LBRACE) {
+			return nil
+		}
+		expr.Else = this.parseBlockStmt()
+	}
+
 	return expr
 }
 

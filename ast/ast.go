@@ -24,19 +24,19 @@ type StatementSlice []Statement
 
 // Program : implement Node
 type Program struct {
-	Statements StatementSlice
+	Stmts StatementSlice
 }
 
 func (this *Program) TokenLiteral() string {
-	if len(this.Statements) > 0 {
-		return this.Statements[0].TokenLiteral()
+	if len(this.Stmts) > 0 {
+		return this.Stmts[0].TokenLiteral()
 	}
 	return ""
 }
 
 func (this *Program) String() string {
 	var out bytes.Buffer
-	for _, s := range this.Statements {
+	for _, s := range this.Stmts {
 		out.WriteString(s.String())
 	}
 	return out.String()
@@ -119,6 +119,23 @@ func (this *ExpressionStatement) String() string {
 	return ""
 }
 
+type BlockStatement struct {
+	Tok   *token.Token // {
+	Stmts StatementSlice
+}
+
+func (this *BlockStatement) statementNode() {}
+func (this *BlockStatement) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, s := range this.Stmts {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
 // IntegerLiteral : implement Expression
 type IntegerLiteral struct {
 	Tok   *token.Token
@@ -145,6 +162,38 @@ func (this *Boolean) TokenLiteral() string {
 }
 func (this *Boolean) String() string {
 	return this.Tok.Literal
+}
+
+type IfClause struct {
+	If   Expression
+	Then *BlockStatement
+}
+
+type IfClauseSlice []*IfClause
+
+type IfExpression struct {
+	Tok     *token.Token
+	Clauses IfClauseSlice
+	Else    *BlockStatement
+}
+
+func (this *IfExpression) expressionNode() {}
+func (this *IfExpression) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *IfExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("if")
+	for _, clause := range this.Clauses {
+		out.WriteString(clause.If.String())
+		out.WriteString(" ")
+		out.WriteString(clause.Then.String())
+	}
+	if nil != this.Else {
+		out.WriteString("else ")
+		out.WriteString(this.Else.String())
+	}
+	return out.String()
 }
 
 // PrefixExpression : implement Expression
