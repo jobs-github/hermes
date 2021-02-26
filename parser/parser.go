@@ -5,32 +5,45 @@ import (
 	"hermes/ast"
 	"hermes/lexer"
 	"hermes/token"
-	"strconv"
 )
 
-type prefixParseFn func() ast.Expression
+type decoder interface {
+	decode() ast.Expression
+}
+
+type parseExpressionFn func(precedence int) ast.Expression
+type parseBlockStmtFn func() *ast.BlockStmt
+
 type infixParseFn func(ast.Expression) ast.Expression
 
-type prefixParserMap map[token.TokenType]prefixParseFn
+type tokenDecoderMap map[token.TokenType]decoder
 type infixParserMap map[token.TokenType]infixParseFn
 
 type Parser struct {
 	scanner
-	prefixParseFns prefixParserMap
-	infixParseFns  infixParserMap
+	decoderMap    tokenDecoderMap
+	infixParseFns infixParserMap
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{scanner: scanner{l: l, errors: []string{}}}
-	p.prefixParseFns = prefixParserMap{
-		token.IDENT:  p.parseIdentifier,
-		token.INT:    p.parseIntegerLiteral,
-		token.TRUE:   p.parseBoolean,
-		token.FALSE:  p.parseBoolean,
-		token.NOT:    p.parsePrefixExpression,
-		token.SUB:    p.parsePrefixExpression,
-		token.LPAREN: p.parseGroupedExpression,
-		token.IF:     p.parseIfExpression,
+
+	identifierDecoder := &identifier{&p.scanner}
+	integerDecoder := &integer{&p.scanner}
+	booleanDecoder := &boolean{&p.scanner}
+	prefixExprDecoder := &prefixExpr{&p.scanner, p.parseExpression}
+	groupedExprDecoder := &groupedExpr{&p.scanner, p.parseExpression}
+	ifExprDecoder := &ifExpr{&p.scanner, p.parseExpression, p.parseBlockStmt}
+
+	p.decoderMap = tokenDecoderMap{
+		token.IDENT:  identifierDecoder,
+		token.INT:    integerDecoder,
+		token.TRUE:   booleanDecoder,
+		token.FALSE:  booleanDecoder,
+		token.NOT:    prefixExprDecoder,
+		token.SUB:    prefixExprDecoder,
+		token.LPAREN: groupedExprDecoder,
+		token.IF:     ifExprDecoder,
 	}
 	p.infixParseFns = infixParserMap{
 		token.LT:  p.parseInfixExpression,
@@ -126,32 +139,13 @@ func (this *Parser) parseExprStmt() ast.Statement {
 	return stmt
 }
 
-func (this *Parser) parseIdentifier() ast.Expression {
-	return &ast.Identifier{Tok: this.curTok, Value: this.curTok.Literal}
-}
-
-func (this *Parser) parseIntegerLiteral() ast.Expression {
-	expr := &ast.Integer{Tok: this.curTok}
-	val, err := strconv.ParseInt(this.curTok.Literal, 0, 64)
-	if nil != err {
-		this.appendError(fmt.Sprintf("could not parse %v as integer", this.curTok.Literal))
-		return nil
-	}
-	expr.Value = val
-	return expr
-}
-
-func (this *Parser) parseBoolean() ast.Expression {
-	return &ast.Boolean{Tok: this.curTok, Value: this.curTok.TypeIs(token.TRUE)}
-}
-
 func (this *Parser) parseExpression(precedence int) ast.Expression {
-	prefixFn := this.prefixParseFns[this.curTok.Type]
-	if nil == prefixFn {
-		this.appendError(fmt.Sprintf("%v has no prefix fn", token.ToString(this.curTok.Type)))
+	tokenDecoder := this.decoderMap[this.curTok.Type]
+	if nil == tokenDecoder {
+		this.appendError(fmt.Sprintf("%v has no decoder", token.ToString(this.curTok.Type)))
 		return nil
 	}
-	leftExpr := prefixFn()
+	leftExpr := tokenDecoder.decode()
 
 	for !this.peekTok.TypeIs(token.SEMICOLON) && precedence < this.peekPrecedence() {
 		infix := this.infixParseFns[this.peekTok.Type]
@@ -162,54 +156,6 @@ func (this *Parser) parseExpression(precedence int) ast.Expression {
 		leftExpr = infix(leftExpr)
 	}
 	return leftExpr
-}
-
-func (this *Parser) parsePrefixExpression() ast.Expression {
-	expr := &ast.PrefixExpression{
-		Tok: this.curTok,
-		Op:  this.curTok.Literal,
-	}
-	this.nextToken()
-	expr.Right = this.parseExpression(PRECED_PREFIX)
-	return expr
-}
-
-func (this *Parser) parseGroupedExpression() ast.Expression {
-	this.nextToken()
-	expr := this.parseExpression(PRECED_LOWEST)
-	if !this.expectPeek(token.RPAREN) {
-		return nil
-	}
-	return expr
-}
-
-func (this *Parser) parseIfExpression() ast.Expression {
-	expr := &ast.IfExpression{Tok: this.curTok, Clauses: ast.IfClauseSlice{}}
-
-	clause := &ast.IfClause{}
-	if !this.expectPeek(token.LPAREN) {
-		return nil
-	}
-	this.nextToken()
-	clause.If = this.parseExpression(PRECED_LOWEST)
-	if !this.expectPeek(token.RPAREN) {
-		return nil
-	}
-	if !this.expectPeek(token.LBRACE) {
-		return nil
-	}
-	clause.Then = this.parseBlockStmt()
-	expr.Clauses = append(expr.Clauses, clause)
-
-	if this.peekTok.TypeIs(token.ELSE) {
-		this.nextToken()
-		if !this.expectPeek(token.LBRACE) {
-			return nil
-		}
-		expr.Else = this.parseBlockStmt()
-	}
-
-	return expr
 }
 
 func (this *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
