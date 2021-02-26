@@ -25,17 +25,19 @@ type Parser struct {
 	infixParseFns infixParserMap
 }
 
-func New(l *lexer.Lexer) *Parser {
-	p := &Parser{scanner: scanner{l: l, errors: []string{}}}
+func newTokenDecoderMap(
+	s *scanner,
+	parseExpression parseExpressionFn,
+	parseBlockStmt parseBlockStmtFn,
+) tokenDecoderMap {
+	identifierDecoder := &identifier{s}
+	integerDecoder := &integer{s}
+	booleanDecoder := &boolean{s}
+	prefixExprDecoder := &prefixExpr{s, parseExpression}
+	groupedExprDecoder := &groupedExpr{s, parseExpression}
+	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
 
-	identifierDecoder := &identifier{&p.scanner}
-	integerDecoder := &integer{&p.scanner}
-	booleanDecoder := &boolean{&p.scanner}
-	prefixExprDecoder := &prefixExpr{&p.scanner, p.parseExpression}
-	groupedExprDecoder := &groupedExpr{&p.scanner, p.parseExpression}
-	ifExprDecoder := &ifExpr{&p.scanner, p.parseExpression, p.parseBlockStmt}
-
-	p.decoderMap = tokenDecoderMap{
+	return tokenDecoderMap{
 		token.IDENT:  identifierDecoder,
 		token.INT:    integerDecoder,
 		token.TRUE:   booleanDecoder,
@@ -45,21 +47,30 @@ func New(l *lexer.Lexer) *Parser {
 		token.LPAREN: groupedExprDecoder,
 		token.IF:     ifExprDecoder,
 	}
-	p.infixParseFns = infixParserMap{
-		token.LT:  p.parseInfixExpression,
-		token.GT:  p.parseInfixExpression,
-		token.ADD: p.parseInfixExpression,
-		token.SUB: p.parseInfixExpression,
-		token.MUL: p.parseInfixExpression,
-		token.DIV: p.parseInfixExpression,
-		token.MOD: p.parseInfixExpression,
-		token.EQ:  p.parseInfixExpression,
-		token.NEQ: p.parseInfixExpression,
-		token.LEQ: p.parseInfixExpression,
-		token.GEQ: p.parseInfixExpression,
-		token.AND: p.parseInfixExpression,
-		token.OR:  p.parseInfixExpression,
+}
+
+func newInfixParserMap(parseInfixExpr infixParseFn) infixParserMap {
+	return infixParserMap{
+		token.LT:  parseInfixExpr,
+		token.GT:  parseInfixExpr,
+		token.ADD: parseInfixExpr,
+		token.SUB: parseInfixExpr,
+		token.MUL: parseInfixExpr,
+		token.DIV: parseInfixExpr,
+		token.MOD: parseInfixExpr,
+		token.EQ:  parseInfixExpr,
+		token.NEQ: parseInfixExpr,
+		token.LEQ: parseInfixExpr,
+		token.GEQ: parseInfixExpr,
+		token.AND: parseInfixExpr,
+		token.OR:  parseInfixExpr,
 	}
+}
+
+func New(l *lexer.Lexer) *Parser {
+	p := &Parser{scanner: scanner{l: l, errors: []string{}}}
+	p.decoderMap = newTokenDecoderMap(&p.scanner, p.parseExpression, p.parseBlockStmt)
+	p.infixParseFns = newInfixParserMap(p.parseInfixExpression)
 	// init curTok & peekTok
 	p.nextToken()
 	p.nextToken()
