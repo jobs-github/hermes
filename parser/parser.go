@@ -142,8 +142,8 @@ func (this *Parser) parseStmt() ast.Statement {
 	}
 }
 
-func (this *Parser) parseBlockStmt() *ast.BlockStatement {
-	block := &ast.BlockStatement{Tok: this.curTok}
+func (this *Parser) parseBlockStmt() *ast.BlockStmt {
+	block := &ast.BlockStmt{Tok: this.curTok}
 	block.Stmts = ast.StatementSlice{}
 	this.nextToken()
 	for !this.curTok.TypeIs(token.RBRACE) {
@@ -166,7 +166,7 @@ func (this *Parser) expectPeek(t token.TokenType) bool {
 }
 
 func (this *Parser) parseVarStmt() ast.Statement {
-	stmt := &ast.VarStatement{Tok: this.curTok}
+	stmt := &ast.VarStmt{Tok: this.curTok}
 	if !this.expectPeek(token.IDENT) {
 		return nil
 	}
@@ -182,7 +182,7 @@ func (this *Parser) parseVarStmt() ast.Statement {
 }
 
 func (this *Parser) parseReturnStmt() ast.Statement {
-	stmt := &ast.ReturnStatement{Tok: this.curTok}
+	stmt := &ast.ReturnStmt{Tok: this.curTok}
 	this.nextToken()
 
 	for !this.curTok.TypeIs(token.SEMICOLON) {
@@ -192,7 +192,7 @@ func (this *Parser) parseReturnStmt() ast.Statement {
 }
 
 func (this *Parser) parseExprStmt() ast.Statement {
-	stmt := &ast.ExpressionStatement{Tok: this.curTok}
+	stmt := &ast.ExpressionStmt{Tok: this.curTok}
 	stmt.Expr = this.parseExpression(PRECED_LOWEST)
 
 	if this.peekTok.TypeIs(token.SEMICOLON) {
@@ -206,7 +206,7 @@ func (this *Parser) parseIdentifier() ast.Expression {
 }
 
 func (this *Parser) parseIntegerLiteral() ast.Expression {
-	expr := &ast.IntegerLiteral{Tok: this.curTok}
+	expr := &ast.Integer{Tok: this.curTok}
 	val, err := strconv.ParseInt(this.curTok.Literal, 0, 64)
 	if nil != err {
 		this.appendError(fmt.Sprintf("could not parse %v as integer", this.curTok.Literal))

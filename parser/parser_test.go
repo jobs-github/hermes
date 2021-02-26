@@ -13,7 +13,7 @@ func testVarStatements(t *testing.T, s ast.Statement, name string) bool {
 		t.Errorf("s.TokenLiteral() not `var`, got=%v", s.TokenLiteral())
 		return false
 	}
-	varStmt, ok := s.(*ast.VarStatement)
+	varStmt, ok := s.(*ast.VarStmt)
 	if !ok {
 		t.Errorf("s is not *ast.VarStatement, got=%v", reflect.TypeOf(s).String())
 		return false
@@ -94,7 +94,7 @@ func TestReturnStatements(t *testing.T) {
 	}
 
 	for _, stmt := range program.Stmts {
-		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		returnStmt, ok := stmt.(*ast.ReturnStmt)
 		if !ok {
 			t.Errorf("stmt not *ast.ReturnStatement, got %v", reflect.TypeOf(stmt).String())
 			continue
@@ -120,7 +120,7 @@ func TestIdentExpr(t *testing.T) {
 		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
@@ -151,11 +151,11 @@ func TestIntExpr(t *testing.T) {
 		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
-	literal, ok := stmt.Expr.(*ast.IntegerLiteral)
+	literal, ok := stmt.Expr.(*ast.Integer)
 	if !ok {
 		t.Fatalf("Expr is not *ast.Identifier, got %v", reflect.TypeOf(stmt.Expr).String())
 	}
@@ -185,7 +185,7 @@ func testIdentifier(t *testing.T, expr ast.Expression, value string) bool {
 }
 
 func testIntegerLiteral(t *testing.T, expr ast.Expression, val int64) bool {
-	iv, ok := expr.(*ast.IntegerLiteral)
+	iv, ok := expr.(*ast.Integer)
 	if !ok {
 		t.Errorf("expr not *ast.IntegerLiteral, got %v", reflect.TypeOf(expr).String())
 		return false
@@ -233,7 +233,7 @@ func TestBoolExpr(t *testing.T) {
 		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
@@ -306,7 +306,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 			t.Fatalf("number of program Statements: %v", len(program.Stmts))
 		}
 
-		stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 		if !ok {
 			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 		}
@@ -355,7 +355,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 			t.Fatalf("number of program Statements: %v", len(program.Stmts))
 		}
 
-		stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+		stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 		if !ok {
 			t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 		}
@@ -433,7 +433,7 @@ func TestIfExpression(t *testing.T) {
 		t.Fatalf("number of program Statements: %v", len(program.Stmts))
 	}
 
-	stmt, ok := program.Stmts[0].(*ast.ExpressionStatement)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
 	if !ok {
 		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
 	}
@@ -452,7 +452,7 @@ func TestIfExpression(t *testing.T) {
 		t.Fatalf("number of expr.Clauses[0].Then.Stmts: %v", len(expr.Clauses[0].Then.Stmts))
 	}
 	thenstmt := expr.Clauses[0].Then.Stmts[0]
-	then, ok := thenstmt.(*ast.ExpressionStatement)
+	then, ok := thenstmt.(*ast.ExpressionStmt)
 	if !ok {
 		t.Fatalf("stmt is not *ast.ExpressionStatement, got %v", reflect.TypeOf(thenstmt).String())
 	}

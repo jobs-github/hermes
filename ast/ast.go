@@ -56,18 +56,18 @@ func (this *Identifier) String() string {
 	return this.Value
 }
 
-// VarStatement : implement Statement
-type VarStatement struct {
+// VarStmt : implement Statement
+type VarStmt struct {
 	Tok   *token.Token
 	Name  *Identifier
 	Value Expression
 }
 
-func (this *VarStatement) statementNode() {}
-func (this *VarStatement) TokenLiteral() string {
+func (this *VarStmt) statementNode() {}
+func (this *VarStmt) TokenLiteral() string {
 	return this.Tok.Literal
 }
-func (this *VarStatement) String() string {
+func (this *VarStmt) String() string {
 	var out bytes.Buffer
 	out.WriteString(this.TokenLiteral())
 	out.WriteString(" ")
@@ -80,17 +80,17 @@ func (this *VarStatement) String() string {
 	return out.String()
 }
 
-// ReturnStatement : implement Statement
-type ReturnStatement struct {
+// ReturnStmt : implement Statement
+type ReturnStmt struct {
 	Tok         *token.Token
 	ReturnValue Expression
 }
 
-func (this *ReturnStatement) statementNode() {}
-func (this *ReturnStatement) TokenLiteral() string {
+func (this *ReturnStmt) statementNode() {}
+func (this *ReturnStmt) TokenLiteral() string {
 	return this.Tok.Literal
 }
-func (this *ReturnStatement) String() string {
+func (this *ReturnStmt) String() string {
 	var out bytes.Buffer
 	out.WriteString(this.TokenLiteral())
 	out.WriteString(" ")
@@ -102,33 +102,33 @@ func (this *ReturnStatement) String() string {
 	return out.String()
 }
 
-// ExpressionStatement : implement Statement
-type ExpressionStatement struct {
+// ExpressionStmt : implement Statement
+type ExpressionStmt struct {
 	Tok  *token.Token
 	Expr Expression
 }
 
-func (this *ExpressionStatement) statementNode() {}
-func (this *ExpressionStatement) TokenLiteral() string {
+func (this *ExpressionStmt) statementNode() {}
+func (this *ExpressionStmt) TokenLiteral() string {
 	return this.Tok.Literal
 }
-func (this *ExpressionStatement) String() string {
+func (this *ExpressionStmt) String() string {
 	if this.Expr != nil {
 		return this.Expr.String()
 	}
 	return ""
 }
 
-type BlockStatement struct {
+type BlockStmt struct {
 	Tok   *token.Token // {
 	Stmts StatementSlice
 }
 
-func (this *BlockStatement) statementNode() {}
-func (this *BlockStatement) TokenLiteral() string {
+func (this *BlockStmt) statementNode() {}
+func (this *BlockStmt) TokenLiteral() string {
 	return this.Tok.Literal
 }
-func (this *BlockStatement) String() string {
+func (this *BlockStmt) String() string {
 	var out bytes.Buffer
 	for _, s := range this.Stmts {
 		out.WriteString(s.String())
@@ -136,17 +136,17 @@ func (this *BlockStatement) String() string {
 	return out.String()
 }
 
-// IntegerLiteral : implement Expression
-type IntegerLiteral struct {
+// Integer : implement Expression
+type Integer struct {
 	Tok   *token.Token
 	Value int64
 }
 
-func (this *IntegerLiteral) expressionNode() {}
-func (this *IntegerLiteral) TokenLiteral() string {
+func (this *Integer) expressionNode() {}
+func (this *Integer) TokenLiteral() string {
 	return this.Tok.Literal
 }
-func (this *IntegerLiteral) String() string {
+func (this *Integer) String() string {
 	return this.Tok.Literal
 }
 
@@ -166,7 +166,7 @@ func (this *Boolean) String() string {
 
 type IfClause struct {
 	If   Expression
-	Then *BlockStatement
+	Then *BlockStmt
 }
 
 type IfClauseSlice []*IfClause
@@ -174,7 +174,7 @@ type IfClauseSlice []*IfClause
 type IfExpression struct {
 	Tok     *token.Token
 	Clauses IfClauseSlice
-	Else    *BlockStatement
+	Else    *BlockStmt
 }
 
 func (this *IfExpression) expressionNode() {}

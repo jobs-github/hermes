@@ -8,7 +8,7 @@ import (
 func TestString(t *testing.T) {
 	program := &Program{
 		Stmts: StatementSlice{
-			&VarStatement{
+			&VarStmt{
 				Tok: &token.Token{Type: token.VAR, Literal: "var"},
 				Name: &Identifier{
 					Tok:   &token.Token{Type: token.IDENT, Literal: "testVar1"},
