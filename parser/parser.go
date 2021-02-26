@@ -8,40 +8,6 @@ import (
 	"strconv"
 )
 
-const (
-	_ int = iota
-	PRECED_LOWEST
-	PRECED_OR     // ||
-	PRECED_AND    // &&
-	PRECED_EQ     // ==
-	PRECED_NEQ    // !=
-	PRECED_LT     // < > >= <=
-	PRECED_ADD    // +
-	PRECED_MUL    // *
-	PRECED_PREFIX // -x !x
-	PRECED_CALL   // myFn(x)
-)
-
-var (
-	precedences = map[token.TokenType]int{
-		token.LT: PRECED_LT,
-		token.GT: PRECED_LT,
-		// ASSIGN
-		// NOT
-		token.ADD: PRECED_ADD,
-		token.SUB: PRECED_ADD,
-		token.MUL: PRECED_MUL,
-		token.DIV: PRECED_MUL,
-		token.MOD: PRECED_MUL,
-		token.EQ:  PRECED_EQ,
-		token.NEQ: PRECED_NEQ,
-		token.LEQ: PRECED_LT,
-		token.GEQ: PRECED_LT,
-		token.AND: PRECED_AND,
-		token.OR:  PRECED_OR,
-	}
-)
-
 type prefixParseFn func() ast.Expression
 type infixParseFn func(ast.Expression) ast.Expression
 
@@ -49,17 +15,13 @@ type prefixParserMap map[token.TokenType]prefixParseFn
 type infixParserMap map[token.TokenType]infixParseFn
 
 type Parser struct {
-	l       *lexer.Lexer
-	curTok  *token.Token
-	peekTok *token.Token
-	errors  []string
-
+	scanner
 	prefixParseFns prefixParserMap
 	infixParseFns  infixParserMap
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l, errors: []string{}}
+	p := &Parser{scanner: scanner{l: l, errors: []string{}}}
 	p.prefixParseFns = prefixParserMap{
 		token.IDENT:  p.parseIdentifier,
 		token.INT:    p.parseIntegerLiteral,
@@ -89,34 +51,6 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 	return p
-}
-
-func getPrecedence(tok *token.Token) int {
-	if v, ok := precedences[tok.Type]; ok {
-		return v
-	}
-	return PRECED_LOWEST
-}
-
-func (this *Parser) peekPrecedence() int {
-	return getPrecedence(this.peekTok)
-}
-
-func (this *Parser) curPrecedence() int {
-	return getPrecedence(this.curTok)
-}
-
-func (this *Parser) Errors() []string {
-	return this.errors
-}
-
-func (this *Parser) appendError(err string) {
-	this.errors = append(this.errors, err)
-}
-
-func (this *Parser) nextToken() {
-	this.curTok = this.peekTok
-	this.peekTok = this.l.NextToken()
 }
 
 func (this *Parser) ParseProgram() *ast.Program {
@@ -154,15 +88,6 @@ func (this *Parser) parseBlockStmt() *ast.BlockStmt {
 		this.nextToken()
 	}
 	return block
-}
-
-func (this *Parser) expectPeek(t token.TokenType) bool {
-	if this.peekTok.TypeIs(t) {
-		this.nextToken()
-		return true
-	}
-	this.appendError(fmt.Sprintf("expected next token to be %v, got %v instead", token.ToString(t), token.ToString(this.peekTok.Type)))
-	return false
 }
 
 func (this *Parser) parseVarStmt() ast.Statement {
