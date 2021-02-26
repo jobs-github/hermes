@@ -490,3 +490,86 @@ func TestIfExpression(t *testing.T) {
 		t.Fatalf("expr.Else != nil")
 	}
 }
+
+func TestIfClausesExpression(t *testing.T) {
+	input := `
+	if (x < y) { 
+		x
+	} else if (x > y) {
+		y
+	} else {
+		z
+	}
+	`
+	l := lexer.New(input)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
+	program := p.ParseProgram()
+	if nil == program {
+		t.Fatalf("program is nil")
+	}
+	checkParserErrors(t, p)
+	if len(program.Stmts) != 1 {
+		t.Fatalf("number of program Statements: %v", len(program.Stmts))
+	}
+
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not *ast.ExpressionStatement, got %v", reflect.TypeOf(program.Stmts[0]).String())
+	}
+	expr, ok := stmt.Expr.(*ast.IfExpression)
+	if !ok {
+		t.Fatalf("Expr is not *ast.IfExpression, got %v", reflect.TypeOf(stmt.Expr).String())
+	}
+	if 2 != len(expr.Clauses) {
+		t.Fatalf("number of expr.Clauses: %v", len(expr.Clauses))
+	}
+
+	if !testInfixExpression(t, expr.Clauses[0].If, "x", "<", "y") {
+		return
+	}
+	if 1 != len(expr.Clauses[0].Then.Stmts) {
+		t.Fatalf("number of expr.Clauses[0].Then.Stmts: %v", len(expr.Clauses[0].Then.Stmts))
+	}
+	thenstmt := expr.Clauses[0].Then.Stmts[0]
+	then, ok := thenstmt.(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("stmt is not *ast.ExpressionStatement, got %v", reflect.TypeOf(thenstmt).String())
+	}
+	if !testIdentifier(t, then.Expr, "x") {
+		return
+	}
+
+	if !testInfixExpression(t, expr.Clauses[1].If, "x", ">", "y") {
+		return
+	}
+	if 1 != len(expr.Clauses[1].Then.Stmts) {
+		t.Fatalf("number of expr.Clauses[0].Then.Stmts: %v", len(expr.Clauses[1].Then.Stmts))
+	}
+	thenstmt2 := expr.Clauses[1].Then.Stmts[0]
+	then2, ok := thenstmt2.(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("stmt is not *ast.ExpressionStatement, got %v", reflect.TypeOf(thenstmt2).String())
+	}
+	if !testIdentifier(t, then2.Expr, "y") {
+		return
+	}
+
+	if expr.Else == nil {
+		t.Fatalf("expr.Else == nil")
+	}
+
+	if 1 != len(expr.Else.Stmts) {
+		t.Fatalf("number of expr.Else.Stmts: %v", len(expr.Else.Stmts))
+	}
+	elsestmt := expr.Else.Stmts[0]
+	thenelse, ok := elsestmt.(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("elsestmt is not *ast.ExpressionStatement, got %v", reflect.TypeOf(elsestmt).String())
+	}
+	if !testIdentifier(t, thenelse.Expr, "z") {
+		return
+	}
+}

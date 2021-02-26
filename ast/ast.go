@@ -183,15 +183,23 @@ func (this *IfExpression) TokenLiteral() string {
 }
 func (this *IfExpression) String() string {
 	var out bytes.Buffer
-	out.WriteString("if")
-	for _, clause := range this.Clauses {
+
+	for i, clause := range this.Clauses {
+		if 0 == i {
+			out.WriteString("if")
+		} else {
+			out.WriteString("else if")
+		}
 		out.WriteString(clause.If.String())
-		out.WriteString(" ")
+		out.WriteString("{")
 		out.WriteString(clause.Then.String())
+		out.WriteString("}")
 	}
 	if nil != this.Else {
 		out.WriteString("else ")
+		out.WriteString("{")
 		out.WriteString(this.Else.String())
+		out.WriteString("}")
 	}
 	return out.String()
 }

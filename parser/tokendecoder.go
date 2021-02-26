@@ -109,9 +109,7 @@ type ifExpr struct {
 	parseBlockStmt  parseBlockStmtFn
 }
 
-func (this *ifExpr) decode() ast.Expression {
-	expr := &ast.IfExpression{Tok: this.scanner.curTok, Clauses: ast.IfClauseSlice{}}
-
+func (this *ifExpr) decodeClause() *ast.IfClause {
 	clause := &ast.IfClause{}
 	if !this.scanner.expectPeek(token.LPAREN) {
 		return nil
@@ -125,15 +123,51 @@ func (this *ifExpr) decode() ast.Expression {
 		return nil
 	}
 	clause.Then = this.parseBlockStmt()
-	expr.Clauses = append(expr.Clauses, clause)
+	return clause
+}
 
-	if this.scanner.peekTok.TypeIs(token.ELSE) {
-		this.scanner.nextToken()
-		if !this.scanner.expectPeek(token.LBRACE) {
-			return nil
-		}
-		expr.Else = this.parseBlockStmt()
+func (this *ifExpr) decodeElseIf(expr *ast.IfExpression) bool {
+	this.scanner.nextToken()
+	this.scanner.nextToken()
+
+	clause := this.decodeClause()
+	if nil == clause {
+		return false
 	}
+	expr.Clauses = append(expr.Clauses, clause)
+	return true
+}
 
+func (this *ifExpr) decodeElse(expr *ast.IfExpression) bool {
+	this.scanner.nextToken()
+	if !this.scanner.expectPeek(token.LBRACE) {
+		return false
+	}
+	expr.Else = this.parseBlockStmt()
+	return true
+}
+
+func (this *ifExpr) decode() ast.Expression {
+	expr := &ast.IfExpression{Tok: this.scanner.curTok, Clauses: ast.IfClauseSlice{}}
+
+	clause := this.decodeClause()
+	if nil == clause {
+		return nil
+	}
+	expr.Clauses = append(expr.Clauses, clause)
+	for {
+		if this.scanner.expectPeek2(token.ELSE, token.IF) {
+			if !this.decodeElseIf(expr) {
+				return nil
+			}
+		} else if this.scanner.peekTok.TypeIs(token.ELSE) {
+			if !this.decodeElse(expr) {
+				return nil
+			}
+			break
+		} else {
+			break
+		}
+	}
 	return expr
 }
