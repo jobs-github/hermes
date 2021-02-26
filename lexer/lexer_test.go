@@ -117,7 +117,7 @@ func TestLexer_NextToken(t *testing.T) {
 
 	l := New(input)
 	for _, tt := range tests {
-		tok := l.NextToken()
+		tok := l.nextToken()
 		if tok.Type != tt.wantType {
 			t.Fatalf("[%v], Lexer.NextToken() type = %v, want %v", tt.name, tok.Type, tt.wantType)
 		}

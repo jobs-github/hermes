@@ -132,7 +132,11 @@ func (this *Token) TypeIs(t TokenType) bool {
 }
 
 func (this *Token) Eof() bool {
-	return this.Type == EOF
+	return this.TypeIs(EOF)
+}
+
+func (this *Token) Illegal() bool {
+	return this.TypeIs(ILLEGAL)
 }
 
 func (this *Token) String() string {

@@ -53,7 +53,19 @@ func (this *Lexer) twoCharToken(tokenType token.TokenType, expectedNextChar byte
 	}
 }
 
-func (this *Lexer) NextToken() *token.Token {
+func (this *Lexer) Parse() []*token.Token {
+	toks := []*token.Token{}
+	for {
+		tok := this.nextToken()
+		toks = append(toks, tok)
+		if tok.Eof() {
+			break
+		}
+	}
+	return toks
+}
+
+func (this *Lexer) nextToken() *token.Token {
 	var tok *token.Token
 	this.skipWhitespace()
 

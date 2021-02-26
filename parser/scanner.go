@@ -7,10 +7,32 @@ import (
 )
 
 type scanner struct {
-	l       *lexer.Lexer
+	toks    []*token.Token
+	pos     int
 	curTok  *token.Token
 	peekTok *token.Token
 	errors  []string
+}
+
+func newScanner(l *lexer.Lexer) (*scanner, error) {
+	toks := l.Parse()
+	if nil == toks || len(toks) < 1 {
+		return nil, fmt.Errorf("no valid token")
+	}
+	s := &scanner{toks: toks, pos: 0, errors: []string{}}
+	sz := len(toks)
+	if sz == 1 {
+		s.curTok = toks[0]
+		s.peekTok = toks[0]
+	} else {
+		s.curTok = toks[0]
+		s.peekTok = toks[1]
+	}
+	return s, nil
+}
+
+func (this *scanner) eof() bool {
+	return this.curTok.Eof()
 }
 
 func (this *scanner) peekPrecedence() int {
@@ -30,8 +52,14 @@ func (this *scanner) appendError(err string) {
 }
 
 func (this *scanner) nextToken() {
-	this.curTok = this.peekTok
-	this.peekTok = this.l.NextToken()
+	if this.eof() {
+		return
+	}
+	this.pos++
+	this.curTok = this.toks[this.pos]
+	if !this.curTok.Eof() {
+		this.peekTok = this.toks[this.pos+1]
+	}
 }
 
 func (this *scanner) expectPeek(t token.TokenType) bool {

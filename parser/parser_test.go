@@ -30,7 +30,7 @@ func testVarStatements(t *testing.T, s ast.Statement, name string) bool {
 }
 
 func checkParserErrors(t *testing.T, p *Parser) {
-	errs := p.Errors()
+	errs := p.scanner.Errors()
 	if len(errs) < 1 {
 		return
 	}
@@ -48,7 +48,10 @@ func TestVarStatements(t *testing.T) {
 	var foobar = 838383;`
 
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 
 	program := p.ParseProgram()
 	if nil == program {
@@ -82,7 +85,10 @@ func TestReturnStatements(t *testing.T) {
 	return 838383;`
 
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 
 	program := p.ParseProgram()
 	if nil == program {
@@ -109,7 +115,10 @@ func TestIdentExpr(t *testing.T) {
 	input := `foobar;`
 
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 
 	program := p.ParseProgram()
 	if nil == program {
@@ -140,7 +149,10 @@ func TestIntExpr(t *testing.T) {
 	input := `5;`
 
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 
 	program := p.ParseProgram()
 	if nil == program {
@@ -222,7 +234,10 @@ func TestBoolExpr(t *testing.T) {
 	input := `true;`
 
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 
 	program := p.ParseProgram()
 	if nil == program {
@@ -296,7 +311,10 @@ func TestParsingPrefixExpressions(t *testing.T) {
 	}
 	for _, tt := range cases {
 		l := lexer.New(tt.input)
-		p := New(l)
+		p, err := New(l)
+		if nil != err {
+			t.Fatal(err)
+		}
 		program := p.ParseProgram()
 		if nil == program {
 			t.Fatalf("program is nil")
@@ -345,7 +363,10 @@ func TestParsingInfixExpressions(t *testing.T) {
 
 	for _, tt := range cases {
 		l := lexer.New(tt.input)
-		p := New(l)
+		p, err := New(l)
+		if nil != err {
+			t.Fatal(err)
+		}
 		program := p.ParseProgram()
 		if nil == program {
 			t.Fatalf("program is nil")
@@ -407,7 +428,10 @@ func TestOpPrecedParsing(t *testing.T) {
 	}
 	for _, tt := range cases {
 		l := lexer.New(tt.input)
-		p := New(l)
+		p, err := New(l)
+		if nil != err {
+			t.Fatal(err)
+		}
 		program := p.ParseProgram()
 		if nil == program {
 			t.Fatalf("program is nil")
@@ -423,7 +447,10 @@ func TestOpPrecedParsing(t *testing.T) {
 func TestIfExpression(t *testing.T) {
 	input := `if (x < y) { x }`
 	l := lexer.New(input)
-	p := New(l)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
 	program := p.ParseProgram()
 	if nil == program {
 		t.Fatalf("program is nil")
