@@ -7,7 +7,37 @@ import (
 	"strconv"
 )
 
-// identifier : implement decoder
+type tokenDecoder interface {
+	decode() ast.Expression
+}
+
+type tokenDecoderMap map[token.TokenType]tokenDecoder
+
+func newTokenDecoders(
+	s *scanner,
+	parseExpression parseExpressionFn,
+	parseBlockStmt parseBlockStmtFn,
+) tokenDecoderMap {
+	identifierDecoder := &identifier{s}
+	integerDecoder := &integer{s}
+	booleanDecoder := &boolean{s}
+	prefixExprDecoder := &prefixExpr{s, parseExpression}
+	groupedExprDecoder := &groupedExpr{s, parseExpression}
+	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
+
+	return tokenDecoderMap{
+		token.IDENT:  identifierDecoder,
+		token.INT:    integerDecoder,
+		token.TRUE:   booleanDecoder,
+		token.FALSE:  booleanDecoder,
+		token.NOT:    prefixExprDecoder,
+		token.SUB:    prefixExprDecoder,
+		token.LPAREN: groupedExprDecoder,
+		token.IF:     ifExprDecoder,
+	}
+}
+
+// identifier : implement tokenDecoder
 type identifier struct {
 	scanner *scanner
 }
@@ -16,7 +46,7 @@ func (this *identifier) decode() ast.Expression {
 	return &ast.Identifier{Tok: this.scanner.curTok, Value: this.scanner.curTok.Literal}
 }
 
-// boolean : implement decoder
+// boolean : implement tokenDecoder
 type boolean struct {
 	scanner *scanner
 }
@@ -25,7 +55,7 @@ func (this *boolean) decode() ast.Expression {
 	return &ast.Boolean{Tok: this.scanner.curTok, Value: this.scanner.curTok.TypeIs(token.TRUE)}
 }
 
-// integer : implement decoder
+// integer : implement tokenDecoder
 type integer struct {
 	scanner *scanner
 }
@@ -41,7 +71,7 @@ func (this *integer) decode() ast.Expression {
 	return expr
 }
 
-// prefixExpr : implement decoder
+// prefixExpr : implement tokenDecoder
 type prefixExpr struct {
 	scanner         *scanner
 	parseExpression parseExpressionFn
@@ -57,7 +87,7 @@ func (this *prefixExpr) decode() ast.Expression {
 	return expr
 }
 
-// groupedExpr : implement decoder
+// groupedExpr : implement tokenDecoder
 type groupedExpr struct {
 	scanner         *scanner
 	parseExpression parseExpressionFn
@@ -72,6 +102,7 @@ func (this *groupedExpr) decode() ast.Expression {
 	return expr
 }
 
+// ifExpr : implement tokenDecoder
 type ifExpr struct {
 	scanner         *scanner
 	parseExpression parseExpressionFn

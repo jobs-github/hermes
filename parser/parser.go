@@ -7,50 +7,20 @@ import (
 	"hermes/token"
 )
 
-type decoder interface {
-	decode() ast.Expression
-}
+type decodeInfix func(ast.Expression) ast.Expression
 
-type parseExpressionFn func(precedence int) ast.Expression
-type parseBlockStmtFn func() *ast.BlockStmt
-
-type infixParseFn func(ast.Expression) ast.Expression
-
-type tokenDecoderMap map[token.TokenType]decoder
-type infixParserMap map[token.TokenType]infixParseFn
+type infixDecoderMap map[token.TokenType]decodeInfix
 
 type Parser struct {
 	scanner
-	decoderMap    tokenDecoderMap
-	infixParseFns infixParserMap
+
+	stmtParser    *stmtParser
+	tokenDecoders tokenDecoderMap
+	infixDecoders infixDecoderMap
 }
 
-func newTokenDecoderMap(
-	s *scanner,
-	parseExpression parseExpressionFn,
-	parseBlockStmt parseBlockStmtFn,
-) tokenDecoderMap {
-	identifierDecoder := &identifier{s}
-	integerDecoder := &integer{s}
-	booleanDecoder := &boolean{s}
-	prefixExprDecoder := &prefixExpr{s, parseExpression}
-	groupedExprDecoder := &groupedExpr{s, parseExpression}
-	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
-
-	return tokenDecoderMap{
-		token.IDENT:  identifierDecoder,
-		token.INT:    integerDecoder,
-		token.TRUE:   booleanDecoder,
-		token.FALSE:  booleanDecoder,
-		token.NOT:    prefixExprDecoder,
-		token.SUB:    prefixExprDecoder,
-		token.LPAREN: groupedExprDecoder,
-		token.IF:     ifExprDecoder,
-	}
-}
-
-func newInfixParserMap(parseInfixExpr infixParseFn) infixParserMap {
-	return infixParserMap{
+func newInfixDecoders(parseInfixExpr decodeInfix) infixDecoderMap {
+	return infixDecoderMap{
 		token.LT:  parseInfixExpr,
 		token.GT:  parseInfixExpr,
 		token.ADD: parseInfixExpr,
@@ -69,12 +39,18 @@ func newInfixParserMap(parseInfixExpr infixParseFn) infixParserMap {
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{scanner: scanner{l: l, errors: []string{}}}
-	p.decoderMap = newTokenDecoderMap(&p.scanner, p.parseExpression, p.parseBlockStmt)
-	p.infixParseFns = newInfixParserMap(p.parseInfixExpression)
+
+	p.stmtParser = newStmtParser(&p.scanner, p.parseExpression)
+	p.tokenDecoders = newTokenDecoders(&p.scanner, p.parseExpression, p.parseBlockStmt)
+	p.infixDecoders = newInfixDecoders(p.parseInfixExpression)
 	// init curTok & peekTok
 	p.nextToken()
 	p.nextToken()
 	return p
+}
+
+func (this *Parser) parseStmt() ast.Statement {
+	return this.stmtParser.decode(this.curTok.Type)
 }
 
 func (this *Parser) ParseProgram() *ast.Program {
@@ -87,17 +63,6 @@ func (this *Parser) ParseProgram() *ast.Program {
 		this.nextToken()
 	}
 	return program
-}
-
-func (this *Parser) parseStmt() ast.Statement {
-	switch this.curTok.Type {
-	case token.VAR:
-		return this.parseVarStmt()
-	case token.RETURN:
-		return this.parseReturnStmt()
-	default:
-		return this.parseExprStmt()
-	}
 }
 
 func (this *Parser) parseBlockStmt() *ast.BlockStmt {
@@ -114,44 +79,8 @@ func (this *Parser) parseBlockStmt() *ast.BlockStmt {
 	return block
 }
 
-func (this *Parser) parseVarStmt() ast.Statement {
-	stmt := &ast.VarStmt{Tok: this.curTok}
-	if !this.expectPeek(token.IDENT) {
-		return nil
-	}
-	stmt.Name = &ast.Identifier{Tok: this.curTok, Value: this.curTok.Literal}
-	if !this.expectPeek(token.ASSIGN) {
-		return nil
-	}
-
-	for !this.curTok.TypeIs(token.SEMICOLON) {
-		this.nextToken()
-	}
-	return stmt
-}
-
-func (this *Parser) parseReturnStmt() ast.Statement {
-	stmt := &ast.ReturnStmt{Tok: this.curTok}
-	this.nextToken()
-
-	for !this.curTok.TypeIs(token.SEMICOLON) {
-		this.nextToken()
-	}
-	return stmt
-}
-
-func (this *Parser) parseExprStmt() ast.Statement {
-	stmt := &ast.ExpressionStmt{Tok: this.curTok}
-	stmt.Expr = this.parseExpression(PRECED_LOWEST)
-
-	if this.peekTok.TypeIs(token.SEMICOLON) {
-		this.nextToken()
-	}
-	return stmt
-}
-
 func (this *Parser) parseExpression(precedence int) ast.Expression {
-	tokenDecoder := this.decoderMap[this.curTok.Type]
+	tokenDecoder := this.tokenDecoders[this.curTok.Type]
 	if nil == tokenDecoder {
 		this.appendError(fmt.Sprintf("%v has no decoder", token.ToString(this.curTok.Type)))
 		return nil
@@ -159,7 +88,7 @@ func (this *Parser) parseExpression(precedence int) ast.Expression {
 	leftExpr := tokenDecoder.decode()
 
 	for !this.peekTok.TypeIs(token.SEMICOLON) && precedence < this.peekPrecedence() {
-		infix := this.infixParseFns[this.peekTok.Type]
+		infix := this.infixDecoders[this.peekTok.Type]
 		if nil == infix {
 			return leftExpr
 		}
