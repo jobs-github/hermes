@@ -24,6 +24,7 @@ func newTokenDecoders(
 	prefixExprDecoder := &prefixExpr{s, parseExpression}
 	groupedExprDecoder := &groupedExpr{s, parseExpression}
 	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
+	funcDecoder := &funcLiteral{s, parseExpression, parseBlockStmt}
 
 	return tokenDecoderMap{
 		token.IDENT:  identifierDecoder,
@@ -34,6 +35,7 @@ func newTokenDecoders(
 		token.SUB:    prefixExprDecoder,
 		token.LPAREN: groupedExprDecoder,
 		token.IF:     ifExprDecoder,
+		token.FUNC:   funcDecoder,
 	}
 }
 
@@ -170,4 +172,47 @@ func (this *ifExpr) decode() ast.Expression {
 		}
 	}
 	return expr
+}
+
+// funcLiteral : implement tokenDecoder
+type funcLiteral struct {
+	scanner         *scanner
+	parseExpression parseExpressionFn
+	parseBlockStmt  parseBlockStmtFn
+}
+
+func (this *funcLiteral) parseArgs() ast.IdentifierSlice {
+	args := ast.IdentifierSlice{}
+	if this.scanner.peekTok.TypeIs(token.RPAREN) {
+		this.scanner.nextToken()
+		return args
+	}
+	this.scanner.nextToken()
+	ident := &ast.Identifier{Tok: this.scanner.curTok, Value: this.scanner.curTok.Literal}
+	args = append(args, ident)
+
+	for this.scanner.peekTok.TypeIs(token.COMMA) {
+		this.scanner.nextToken()
+		this.scanner.nextToken()
+		ident := &ast.Identifier{Tok: this.scanner.curTok, Value: this.scanner.curTok.Literal}
+		args = append(args, ident)
+	}
+
+	if !this.scanner.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return args
+}
+
+func (this *funcLiteral) decode() ast.Expression {
+	lit := &ast.Function{Tok: this.scanner.curTok}
+	if !this.scanner.expectPeek(token.LPAREN) {
+		return nil
+	}
+	lit.Args = this.parseArgs()
+	if !this.scanner.expectPeek(token.LBRACE) {
+		return nil
+	}
+	lit.Body = this.parseBlockStmt()
+	return lit
 }
