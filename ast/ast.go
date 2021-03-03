@@ -21,6 +21,8 @@ type Expression interface {
 	expressionNode()
 }
 
+type ExpressionSlice []Expression
+
 type StatementSlice []Statement
 
 // Program : implement Node
@@ -230,6 +232,33 @@ func (this *Function) String() string {
 	out.WriteString(strings.Join(args, ", "))
 	out.WriteString(")")
 	out.WriteString(this.Body.String())
+
+	return out.String()
+}
+
+// Call : implement Expression
+type Call struct {
+	Tok  *token.Token
+	Func Expression
+	Args ExpressionSlice
+}
+
+func (this *Call) expressionNode() {}
+func (this *Call) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *Call) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range this.Args {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(this.Func.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
 
 	return out.String()
 }

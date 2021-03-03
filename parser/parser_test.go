@@ -425,6 +425,9 @@ func TestOpPrecedParsing(t *testing.T) {
 		{"2 / (5 + 5)", "(2 / (5 + 5))"},
 		{"-(5 + 5)", "(-(5 + 5))"},
 		{"!(true == true)", "(!(true == true))"},
+		{"a + add(b * c) + d", "((a + add((b * c))) + d)"},
+		{"add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"},
+		{"add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"},
 	}
 	for _, tt := range cases {
 		l := lexer.New(tt.input)
@@ -650,4 +653,36 @@ func TestFuncArgsParsing(t *testing.T) {
 			testLiteralExpression(t, function.Args[i], ident)
 		}
 	}
+}
+
+func TestCallParsing(t *testing.T) {
+	input := "add(1, 2 * 3, 4 + 5)"
+
+	l := lexer.New(input)
+	p, err := New(l)
+	if nil != err {
+		t.Fatal(err)
+	}
+	program := p.ParseProgram()
+	if nil == program {
+		t.Fatalf("program is nil")
+	}
+	checkParserErrors(t, p)
+	stmt, ok := program.Stmts[0].(*ast.ExpressionStmt)
+	if !ok {
+		t.Fatalf("program.Stmts[0] is not *ast.ExpressionStmt, got %v", reflect.TypeOf(program.Stmts[0]).String())
+	}
+	expr, ok := stmt.Expr.(*ast.Call)
+	if !ok {
+		t.Fatalf("stmt.Expr is not *ast.Call, got %v", reflect.TypeOf(program.Stmts[0]).String())
+	}
+	if !testIdentifier(t, expr.Func, "add") {
+		return
+	}
+	if len(expr.Args) != 3 {
+		t.Fatalf("wrong len of args, got %v", len(expr.Args))
+	}
+	testLiteralExpression(t, expr.Args[0], 1)
+	testInfixExpression(t, expr.Args[1], 2, "*", 3)
+	testInfixExpression(t, expr.Args[2], 4, "+", 5)
 }

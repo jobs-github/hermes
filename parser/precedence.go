@@ -22,17 +22,18 @@ var (
 		token.GT: PRECED_LT,
 		// ASSIGN
 		// NOT
-		token.ADD: PRECED_ADD,
-		token.SUB: PRECED_ADD,
-		token.MUL: PRECED_MUL,
-		token.DIV: PRECED_MUL,
-		token.MOD: PRECED_MUL,
-		token.EQ:  PRECED_EQ,
-		token.NEQ: PRECED_NEQ,
-		token.LEQ: PRECED_LT,
-		token.GEQ: PRECED_LT,
-		token.AND: PRECED_AND,
-		token.OR:  PRECED_OR,
+		token.ADD:    PRECED_ADD,
+		token.SUB:    PRECED_ADD,
+		token.MUL:    PRECED_MUL,
+		token.DIV:    PRECED_MUL,
+		token.MOD:    PRECED_MUL,
+		token.EQ:     PRECED_EQ,
+		token.NEQ:    PRECED_NEQ,
+		token.LEQ:    PRECED_LT,
+		token.GEQ:    PRECED_LT,
+		token.AND:    PRECED_AND,
+		token.OR:     PRECED_OR,
+		token.LPAREN: PRECED_CALL,
 	}
 )
 

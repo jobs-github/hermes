@@ -18,21 +18,22 @@ type Parser struct {
 	infixDecoders infixDecoderMap
 }
 
-func newInfixDecoders(parseInfixExpr decodeInfix) infixDecoderMap {
+func newInfixDecoders(parseInfixExpr decodeInfix, parseCall decodeInfix) infixDecoderMap {
 	return infixDecoderMap{
-		token.LT:  parseInfixExpr,
-		token.GT:  parseInfixExpr,
-		token.ADD: parseInfixExpr,
-		token.SUB: parseInfixExpr,
-		token.MUL: parseInfixExpr,
-		token.DIV: parseInfixExpr,
-		token.MOD: parseInfixExpr,
-		token.EQ:  parseInfixExpr,
-		token.NEQ: parseInfixExpr,
-		token.LEQ: parseInfixExpr,
-		token.GEQ: parseInfixExpr,
-		token.AND: parseInfixExpr,
-		token.OR:  parseInfixExpr,
+		token.LT:     parseInfixExpr,
+		token.GT:     parseInfixExpr,
+		token.ADD:    parseInfixExpr,
+		token.SUB:    parseInfixExpr,
+		token.MUL:    parseInfixExpr,
+		token.DIV:    parseInfixExpr,
+		token.MOD:    parseInfixExpr,
+		token.EQ:     parseInfixExpr,
+		token.NEQ:    parseInfixExpr,
+		token.LEQ:    parseInfixExpr,
+		token.GEQ:    parseInfixExpr,
+		token.AND:    parseInfixExpr,
+		token.OR:     parseInfixExpr,
+		token.LPAREN: parseCall,
 	}
 }
 
@@ -44,7 +45,7 @@ func New(l *lexer.Lexer) (*Parser, error) {
 	p := &Parser{scanner: s}
 	p.stmtParser = newStmtParser(s, p.parseExpression)
 	p.tokenDecoders = newTokenDecoders(s, p.parseExpression, p.parseBlockStmt)
-	p.infixDecoders = newInfixDecoders(p.parseInfixExpression)
+	p.infixDecoders = newInfixDecoders(p.parseInfixExpression, p.parseCallExpression)
 	return p, nil
 }
 
@@ -107,4 +108,30 @@ func (this *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	this.scanner.nextToken()
 	expr.Right = this.parseExpression(preced)
 	return expr
+}
+
+func (this *Parser) parseCallExpression(left ast.Expression) ast.Expression {
+	expr := &ast.Call{Tok: this.scanner.curTok, Func: left}
+	expr.Args = this.parseCallArgs()
+	return expr
+}
+
+func (this *Parser) parseCallArgs() ast.ExpressionSlice {
+	args := ast.ExpressionSlice{}
+	if this.scanner.peekTok.TypeIs(token.RPAREN) {
+		this.scanner.nextToken()
+		return args
+	}
+	this.scanner.nextToken()
+	args = append(args, this.parseExpression(PRECED_LOWEST))
+
+	for this.scanner.peekTok.TypeIs(token.COMMA) {
+		this.scanner.nextToken()
+		this.scanner.nextToken()
+		args = append(args, this.parseExpression(PRECED_LOWEST))
+	}
+	if !this.scanner.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return args
 }
