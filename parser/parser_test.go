@@ -42,64 +42,67 @@ func checkParserErrors(t *testing.T, p *Parser) {
 }
 
 func TestVarStatements(t *testing.T) {
-	input := `
-	var x = 5;
-	var y = 10;
-	var foobar = 838383;`
-
-	l := lexer.New(input)
-	p, err := New(l)
-	if nil != err {
-		t.Fatal(err)
-	}
-
-	program := p.ParseProgram()
-	if nil == program {
-		t.Fatalf("program is nil")
-	}
-	checkParserErrors(t, p)
-	if len(program.Stmts) != 3 {
-		t.Fatalf("number of program Statements: %v", len(program.Stmts))
-	}
-
-	tests := []struct {
-		name string
-		want string
+	cases := []struct {
+		input     string
+		wantIdent string
+		wantValue interface{}
 	}{
-		{"1", "x"},
-		{"2", "y"},
-		{"3", "foobar"},
+		{"var x = 5;", "x", 5},
+		{"var y = true;", "y", true},
+		{"var foobar = y;", "foobar", "y"},
 	}
-	for i, tt := range tests {
-		stmt := program.Stmts[i]
-		if !testVarStatements(t, stmt, tt.want) {
+	for _, tt := range cases {
+		l := lexer.New(tt.input)
+		p, err := New(l)
+		if nil != err {
+			t.Fatal(err)
+		}
+
+		program := p.ParseProgram()
+		if nil == program {
+			t.Fatalf("program is nil")
+		}
+		checkParserErrors(t, p)
+		if len(program.Stmts) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Stmts))
+		}
+		stmt := program.Stmts[0]
+		if !testVarStatements(t, stmt, tt.wantIdent) {
+			return
+		}
+		val := stmt.(*ast.VarStmt).Value
+		if !testLiteralExpression(t, val, tt.wantValue) {
 			return
 		}
 	}
 }
 
 func TestReturnStatements(t *testing.T) {
-	input := `
-	return 5;
-	return 10;
-	return 838383;`
-
-	l := lexer.New(input)
-	p, err := New(l)
-	if nil != err {
-		t.Fatal(err)
+	cases := []struct {
+		input     string
+		wantValue interface{}
+	}{
+		{"return 5;", 5},
+		{"return true;", true},
+		{"return abc;", "abc"},
 	}
 
-	program := p.ParseProgram()
-	if nil == program {
-		t.Fatalf("program is nil")
-	}
-	checkParserErrors(t, p)
-	if len(program.Stmts) != 3 {
-		t.Fatalf("number of program Statements: %v", len(program.Stmts))
-	}
+	for _, tt := range cases {
+		l := lexer.New(tt.input)
+		p, err := New(l)
+		if nil != err {
+			t.Fatal(err)
+		}
 
-	for _, stmt := range program.Stmts {
+		program := p.ParseProgram()
+		if nil == program {
+			t.Fatalf("program is nil")
+		}
+		checkParserErrors(t, p)
+		if len(program.Stmts) != 1 {
+			t.Fatalf("number of program Statements: %v", len(program.Stmts))
+		}
+		stmt := program.Stmts[0]
 		returnStmt, ok := stmt.(*ast.ReturnStmt)
 		if !ok {
 			t.Errorf("stmt not *ast.ReturnStatement, got %v", reflect.TypeOf(stmt).String())
@@ -107,6 +110,9 @@ func TestReturnStatements(t *testing.T) {
 		}
 		if returnStmt.TokenLiteral() != "return" {
 			t.Errorf("returnStmt.TokenLiteral() != return, got %v", returnStmt.TokenLiteral())
+		}
+		if !testLiteralExpression(t, returnStmt.ReturnValue, tt.wantValue) {
+			return
 		}
 	}
 }

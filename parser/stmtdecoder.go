@@ -26,15 +26,16 @@ func newStmtParser(s *scanner, parseExpression parseExpressionFn) *stmtParser {
 	return &stmtParser{
 		decodeExprStmt: &exprStmt{s, parseExpression},
 		m: map[token.TokenType]stmtDecoder{
-			token.VAR:    &varStmt{s},
-			token.RETURN: &returnStmt{s},
+			token.VAR:    &varStmt{s, parseExpression},
+			token.RETURN: &returnStmt{s, parseExpression},
 		},
 	}
 }
 
 // varStmt : implement stmtDecoder
 type varStmt struct {
-	scanner *scanner
+	scanner         *scanner
+	parseExpression parseExpressionFn
 }
 
 func (this *varStmt) decode() ast.Statement {
@@ -47,6 +48,10 @@ func (this *varStmt) decode() ast.Statement {
 		return nil
 	}
 
+	this.scanner.nextToken()
+
+	stmt.Value = this.parseExpression(PRECED_LOWEST)
+
 	for !this.scanner.curTok.TypeIs(token.SEMICOLON) {
 		this.scanner.nextToken()
 	}
@@ -55,12 +60,15 @@ func (this *varStmt) decode() ast.Statement {
 
 // returnStmt : implement stmtDecoder
 type returnStmt struct {
-	scanner *scanner
+	scanner         *scanner
+	parseExpression parseExpressionFn
 }
 
 func (this *returnStmt) decode() ast.Statement {
 	stmt := &ast.ReturnStmt{Tok: this.scanner.curTok}
 	this.scanner.nextToken()
+
+	stmt.ReturnValue = this.parseExpression(PRECED_LOWEST)
 
 	for !this.scanner.curTok.TypeIs(token.SEMICOLON) {
 		this.scanner.nextToken()
