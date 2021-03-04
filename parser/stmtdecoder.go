@@ -5,6 +5,10 @@ import (
 	"hermes/token"
 )
 
+func stmtEnd(scanner *scanner) bool {
+	return scanner.curTok.TypeIs(token.SEMICOLON) || scanner.curTok.Eof()
+}
+
 type stmtDecoder interface {
 	decode() ast.Statement
 }
@@ -52,7 +56,7 @@ func (this *varStmt) decode() ast.Statement {
 
 	stmt.Value = this.parseExpression(PRECED_LOWEST)
 
-	for !this.scanner.curTok.TypeIs(token.SEMICOLON) {
+	for !stmtEnd(this.scanner) {
 		this.scanner.nextToken()
 	}
 	return stmt
@@ -70,7 +74,7 @@ func (this *returnStmt) decode() ast.Statement {
 
 	stmt.ReturnValue = this.parseExpression(PRECED_LOWEST)
 
-	for !this.scanner.curTok.TypeIs(token.SEMICOLON) {
+	for !stmtEnd(this.scanner) {
 		this.scanner.nextToken()
 	}
 	return stmt

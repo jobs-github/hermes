@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"hermes/lexer"
-	"hermes/token"
+	"hermes/parser"
 )
 
 func repl(in io.Reader, out io.Writer) {
@@ -20,9 +20,22 @@ func repl(in io.Reader, out io.Writer) {
 		}
 		line := scanner.Text()
 		l := lexer.New(line)
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%v\n", tok.String())
+		p, err := parser.New(l)
+		if nil != err {
+			io.WriteString(out, fmt.Sprintf("\t%v\n", err))
+			continue
 		}
+
+		program := p.ParseProgram()
+		errs := p.Errors()
+		if len(errs) != 0 {
+			for _, msg := range errs {
+				io.WriteString(out, fmt.Sprintf("\t%v\n", msg))
+			}
+			continue
+		}
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
 	}
 }
 

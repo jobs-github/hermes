@@ -49,6 +49,10 @@ func New(l *lexer.Lexer) (*Parser, error) {
 	return p, nil
 }
 
+func (this *Parser) Errors() []string {
+	return this.scanner.errors
+}
+
 func (this *Parser) parseStmt() ast.Statement {
 	return this.stmtParser.decode(this.scanner.curTok.Type)
 }
