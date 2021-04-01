@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"hermes/object"
 	"hermes/token"
 	"strings"
 )
@@ -9,6 +10,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
+	Eval() object.Object
 }
 
 type Statement interface {
@@ -45,6 +47,10 @@ func (this *Program) String() string {
 	return out.String()
 }
 
+func (this *Program) Eval() object.Object {
+	return evalStatements(this.Stmts)
+}
+
 // Identifier : implement Expression
 type Identifier struct {
 	Tok   *token.Token
@@ -57,6 +63,10 @@ func (this *Identifier) TokenLiteral() string {
 }
 func (this *Identifier) String() string {
 	return this.Value
+}
+func (this *Identifier) Eval() object.Object {
+	// TODO
+	return nil
 }
 
 type IdentifierSlice []*Identifier
@@ -84,6 +94,10 @@ func (this *VarStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
+func (this *VarStmt) Eval() object.Object {
+	// TODO
+	return nil
+}
 
 // ReturnStmt : implement Statement
 type ReturnStmt struct {
@@ -106,6 +120,10 @@ func (this *ReturnStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
+func (this *ReturnStmt) Eval() object.Object {
+	// TODO
+	return nil
+}
 
 // ExpressionStmt : implement Statement
 type ExpressionStmt struct {
@@ -122,6 +140,9 @@ func (this *ExpressionStmt) String() string {
 		return this.Expr.String()
 	}
 	return ""
+}
+func (this *ExpressionStmt) Eval() object.Object {
+	return this.Expr.Eval()
 }
 
 type BlockStmt struct {
@@ -140,6 +161,10 @@ func (this *BlockStmt) String() string {
 	}
 	return out.String()
 }
+func (this *BlockStmt) Eval() object.Object {
+	// TODO
+	return nil
+}
 
 // Integer : implement Expression
 type Integer struct {
@@ -154,6 +179,9 @@ func (this *Integer) TokenLiteral() string {
 func (this *Integer) String() string {
 	return this.Tok.Literal
 }
+func (this *Integer) Eval() object.Object {
+	return &object.Integer{Value: this.Value}
+}
 
 // Boolean : implement Expression
 type Boolean struct {
@@ -167,6 +195,9 @@ func (this *Boolean) TokenLiteral() string {
 }
 func (this *Boolean) String() string {
 	return this.Tok.Literal
+}
+func (this *Boolean) Eval() object.Object {
+	return object.ToBoolean(this.Value)
 }
 
 type IfClause struct {
@@ -208,6 +239,10 @@ func (this *IfExpression) String() string {
 	}
 	return out.String()
 }
+func (this *IfExpression) Eval() object.Object {
+	// TODO
+	return nil
+}
 
 // Function : implement Expression
 type Function struct {
@@ -234,6 +269,10 @@ func (this *Function) String() string {
 	out.WriteString(this.Body.String())
 
 	return out.String()
+}
+func (this *Function) Eval() object.Object {
+	// TODO
+	return nil
 }
 
 // Call : implement Expression
@@ -262,6 +301,10 @@ func (this *Call) String() string {
 
 	return out.String()
 }
+func (this *Call) Eval() object.Object {
+	// TODO
+	return nil
+}
 
 // PrefixExpression : implement Expression
 type PrefixExpression struct {
@@ -281,6 +324,9 @@ func (this *PrefixExpression) String() string {
 	out.WriteString(this.Right.String())
 	out.WriteString(")")
 	return out.String()
+}
+func (this *PrefixExpression) Eval() object.Object {
+	return evalPrefixExpression(this.Op, this.Right.Eval())
 }
 
 // InfixExpression : implement Expression
@@ -305,4 +351,8 @@ func (this *InfixExpression) String() string {
 	out.WriteString(this.Right.String())
 	out.WriteString(")")
 	return out.String()
+}
+func (this *InfixExpression) Eval() object.Object {
+	// TODO
+	return nil
 }

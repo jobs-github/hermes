@@ -34,8 +34,11 @@ func repl(in io.Reader, out io.Writer) {
 			}
 			continue
 		}
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		val := program.Eval()
+		if val != nil {
+			io.WriteString(out, val.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
