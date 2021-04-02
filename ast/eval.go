@@ -2,6 +2,7 @@ package ast
 
 import (
 	"hermes/object"
+	"hermes/token"
 )
 
 func evalStatements(stmts StatementSlice) object.Object {
@@ -12,13 +13,17 @@ func evalStatements(stmts StatementSlice) object.Object {
 	return result
 }
 
-func evalPrefixExpression(op string, right object.Object) object.Object {
-	switch op {
-	case "!":
+func evalPrefixExpression(op *token.Token, right object.Object) object.Object {
+	switch op.Type {
+	case token.NOT:
 		return right.Not()
-	case "-":
+	case token.SUB:
 		return right.Opposite()
 	default:
 		return nil
 	}
+}
+
+func evalInfixExpression(op *token.Token, left object.Object, right object.Object) object.Object {
+	return left.Calc(op, right)
 }

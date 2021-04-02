@@ -1,6 +1,9 @@
 package object
 
-import "fmt"
+import (
+	"fmt"
+	"hermes/token"
+)
 
 const (
 	ObjectTypeInteger ObjectType = iota
@@ -45,6 +48,8 @@ type Object interface {
 	Inspect() string
 	Not() Object
 	Opposite() Object
+	Calc(op *token.Token, right Object) Object
+	CalcInteger(op *token.Token, left *Integer) Object
 }
 
 // Integer : implement Object
@@ -69,6 +74,28 @@ func (this *Integer) Not() Object {
 		return True
 	} else {
 		return False
+	}
+}
+
+func (this *Integer) Calc(op *token.Token, right Object) Object {
+	return right.CalcInteger(op, this)
+}
+
+func (this *Integer) CalcInteger(op *token.Token, left *Integer) Object {
+	switch op.Type {
+	case token.ADD:
+		return &Integer{Value: left.Value + this.Value}
+	case token.SUB:
+		return &Integer{Value: left.Value - this.Value}
+	case token.MUL:
+		return &Integer{Value: left.Value * this.Value}
+	case token.DIV:
+		return &Integer{Value: left.Value / this.Value}
+	case token.MOD:
+		return &Integer{Value: left.Value % this.Value}
+	// TODO
+	default:
+		return nil
 	}
 }
 
@@ -97,6 +124,16 @@ func (this *Boolean) Not() Object {
 	}
 }
 
+func (this *Boolean) Calc(op *token.Token, right Object) Object {
+	// TODO
+	return nil
+}
+
+func (this *Boolean) CalcInteger(op *token.Token, left *Integer) Object {
+	// TODO
+	return nil
+}
+
 // Null : implement Object
 type Null struct{}
 
@@ -114,4 +151,14 @@ func (this *Null) Opposite() Object {
 
 func (this *Null) Not() Object {
 	return True
+}
+
+func (this *Null) Calc(op *token.Token, right Object) Object {
+	// TODO
+	return nil
+}
+
+func (this *Null) CalcInteger(op *token.Token, left *Integer) Object {
+	// TODO
+	return nil
 }

@@ -294,7 +294,7 @@ func testInfixExpression(t *testing.T, expr ast.Expression, left interface{}, op
 	if !testLiteralExpression(t, infixExpr.Left, left) {
 		return false
 	}
-	if infixExpr.Op != op {
+	if infixExpr.Op.Literal != op {
 		t.Errorf("infixExpr.Op != %v, got %v", op, infixExpr.Op)
 		return false
 	}
@@ -338,7 +338,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 		if !ok {
 			t.Fatalf("Expr is not *ast.PrefixExpression, got %v", reflect.TypeOf(stmt.Expr).String())
 		}
-		if expr.Op != tt.op {
+		if expr.Op.Literal != tt.op {
 			t.Errorf("expr.Op != %v, got %v", tt.op, expr.Op)
 		}
 		if testLiteralExpression(t, expr.Right, tt.val) {
@@ -393,7 +393,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 		if !testLiteralExpression(t, expr.Left, tt.left) {
 			return
 		}
-		if expr.Op != tt.op {
+		if expr.Op.Literal != tt.op {
 			t.Errorf("expr.Op != %v, got %v", tt.op, expr.Op)
 		}
 		if !testLiteralExpression(t, expr.Right, tt.right) {

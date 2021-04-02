@@ -82,7 +82,7 @@ type prefixExpr struct {
 func (this *prefixExpr) decode() ast.Expression {
 	expr := &ast.PrefixExpression{
 		Tok: this.scanner.curTok,
-		Op:  this.scanner.curTok.Literal,
+		Op:  this.scanner.curTok,
 	}
 	this.scanner.nextToken()
 	expr.Right = this.parseExpression(PRECED_PREFIX)

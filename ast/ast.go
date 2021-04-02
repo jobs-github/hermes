@@ -309,7 +309,7 @@ func (this *Call) Eval() object.Object {
 // PrefixExpression : implement Expression
 type PrefixExpression struct {
 	Tok   *token.Token
-	Op    string
+	Op    *token.Token
 	Right Expression
 }
 
@@ -320,7 +320,7 @@ func (this *PrefixExpression) TokenLiteral() string {
 func (this *PrefixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
-	out.WriteString(this.Op)
+	out.WriteString(this.Op.Literal)
 	out.WriteString(this.Right.String())
 	out.WriteString(")")
 	return out.String()
@@ -333,7 +333,7 @@ func (this *PrefixExpression) Eval() object.Object {
 type InfixExpression struct {
 	Tok   *token.Token
 	Left  Expression
-	Op    string
+	Op    *token.Token
 	Right Expression
 }
 
@@ -346,13 +346,14 @@ func (this *InfixExpression) String() string {
 	out.WriteString("(")
 	out.WriteString(this.Left.String())
 	out.WriteString(" ")
-	out.WriteString(this.Op)
+	out.WriteString(this.Op.Literal)
 	out.WriteString(" ")
 	out.WriteString(this.Right.String())
 	out.WriteString(")")
 	return out.String()
 }
 func (this *InfixExpression) Eval() object.Object {
-	// TODO
-	return nil
+	left := this.Left.Eval()
+	right := this.Right.Eval()
+	return evalInfixExpression(this.Op, left, right)
 }

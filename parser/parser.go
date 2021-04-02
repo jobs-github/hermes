@@ -105,7 +105,7 @@ func (this *Parser) parseExpression(precedence int) ast.Expression {
 func (this *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expr := &ast.InfixExpression{
 		Tok:  this.scanner.curTok,
-		Op:   this.scanner.curTok.Literal,
+		Op:   this.scanner.curTok,
 		Left: left,
 	}
 	preced := this.scanner.curPrecedence()
