@@ -46,10 +46,10 @@ func ToBoolean(v bool) *Boolean {
 type Object interface {
 	Type() ObjectType
 	Inspect() string
-	Not() Object
-	Opposite() Object
-	Calc(op *token.Token, right Object) Object
-	CalcInteger(op *token.Token, left *Integer) Object
+	Not() (Object, error)
+	Opposite() (Object, error)
+	Calc(op *token.Token, right Object) (Object, error)
+	CalcInteger(op *token.Token, left *Integer) (Object, error)
 }
 
 // Integer : implement Object
@@ -65,37 +65,45 @@ func (this *Integer) Inspect() string {
 	return fmt.Sprintf("%v", this.Value)
 }
 
-func (this *Integer) Opposite() Object {
-	return &Integer{Value: -this.Value}
+func (this *Integer) Opposite() (Object, error) {
+	return &Integer{Value: -this.Value}, nil
 }
 
-func (this *Integer) Not() Object {
+func (this *Integer) Not() (Object, error) {
 	if 0 == this.Value {
-		return True
+		return True, nil
 	} else {
-		return False
+		return False, nil
 	}
 }
 
-func (this *Integer) Calc(op *token.Token, right Object) Object {
+func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
 	return right.CalcInteger(op, this)
 }
 
-func (this *Integer) CalcInteger(op *token.Token, left *Integer) Object {
+func (this *Integer) CalcInteger(op *token.Token, left *Integer) (Object, error) {
 	switch op.Type {
 	case token.ADD:
-		return &Integer{Value: left.Value + this.Value}
+		return &Integer{Value: left.Value + this.Value}, nil
 	case token.SUB:
-		return &Integer{Value: left.Value - this.Value}
+		return &Integer{Value: left.Value - this.Value}, nil
 	case token.MUL:
-		return &Integer{Value: left.Value * this.Value}
+		return &Integer{Value: left.Value * this.Value}, nil
 	case token.DIV:
-		return &Integer{Value: left.Value / this.Value}
+		return &Integer{Value: left.Value / this.Value}, nil
 	case token.MOD:
-		return &Integer{Value: left.Value % this.Value}
+		return &Integer{Value: left.Value % this.Value}, nil
+	case token.LT:
+		return ToBoolean(left.Value < this.Value), nil
+	case token.GT:
+		return ToBoolean(left.Value > this.Value), nil
+	case token.EQ:
+		return ToBoolean(left.Value == this.Value), nil
+	case token.NEQ:
+		return ToBoolean(left.Value != this.Value), nil
 	// TODO
 	default:
-		return nil
+		return nil, fmt.Errorf("Integer.CalcInteger: unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }
 
@@ -112,26 +120,30 @@ func (this *Boolean) Inspect() string {
 	return fmt.Sprintf("%v", this.Value)
 }
 
-func (this *Boolean) Opposite() Object {
-	return nil
-}
-
-func (this *Boolean) Not() Object {
+func (this *Boolean) Opposite() (Object, error) {
 	if this.Value {
-		return False
+		return &Integer{Value: -1}, nil
 	} else {
-		return True
+		return &Integer{Value: 0}, nil
 	}
 }
 
-func (this *Boolean) Calc(op *token.Token, right Object) Object {
-	// TODO
-	return nil
+func (this *Boolean) Not() (Object, error) {
+	if this.Value {
+		return False, nil
+	} else {
+		return True, nil
+	}
 }
 
-func (this *Boolean) CalcInteger(op *token.Token, left *Integer) Object {
+func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Boolean.Calc: not implement")
+}
+
+func (this *Boolean) CalcInteger(op *token.Token, left *Integer) (Object, error) {
+	// TODO
+	return nil, fmt.Errorf("Boolean.CalcInteger: not implement")
 }
 
 // Null : implement Object
@@ -145,20 +157,20 @@ func (this *Null) Inspect() string {
 	return "null"
 }
 
-func (this *Null) Opposite() Object {
-	return nil
+func (this *Null) Opposite() (Object, error) {
+	return nil, fmt.Errorf("Null.Opposite: not supported")
 }
 
-func (this *Null) Not() Object {
-	return True
+func (this *Null) Not() (Object, error) {
+	return True, nil
 }
 
-func (this *Null) Calc(op *token.Token, right Object) Object {
+func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Null.Calc: not implement")
 }
 
-func (this *Null) CalcInteger(op *token.Token, left *Integer) Object {
+func (this *Null) CalcInteger(op *token.Token, left *Integer) (Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Null.CalcInteger: not implement")
 }

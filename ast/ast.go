@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"fmt"
 	"hermes/object"
 	"hermes/token"
 	"strings"
@@ -10,7 +11,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
-	Eval() object.Object
+	Eval() (object.Object, error)
 }
 
 type Statement interface {
@@ -47,7 +48,7 @@ func (this *Program) String() string {
 	return out.String()
 }
 
-func (this *Program) Eval() object.Object {
+func (this *Program) Eval() (object.Object, error) {
 	return evalStatements(this.Stmts)
 }
 
@@ -64,9 +65,9 @@ func (this *Identifier) TokenLiteral() string {
 func (this *Identifier) String() string {
 	return this.Value
 }
-func (this *Identifier) Eval() object.Object {
+func (this *Identifier) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Identifier.Eval not implement")
 }
 
 type IdentifierSlice []*Identifier
@@ -94,9 +95,9 @@ func (this *VarStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *VarStmt) Eval() object.Object {
+func (this *VarStmt) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("VarStmt.Eval not implement")
 }
 
 // ReturnStmt : implement Statement
@@ -120,9 +121,9 @@ func (this *ReturnStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *ReturnStmt) Eval() object.Object {
+func (this *ReturnStmt) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("ReturnStmt.Eval not implement")
 }
 
 // ExpressionStmt : implement Statement
@@ -141,7 +142,7 @@ func (this *ExpressionStmt) String() string {
 	}
 	return ""
 }
-func (this *ExpressionStmt) Eval() object.Object {
+func (this *ExpressionStmt) Eval() (object.Object, error) {
 	return this.Expr.Eval()
 }
 
@@ -161,9 +162,9 @@ func (this *BlockStmt) String() string {
 	}
 	return out.String()
 }
-func (this *BlockStmt) Eval() object.Object {
+func (this *BlockStmt) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("BlockStmt.Eval not implement")
 }
 
 // Integer : implement Expression
@@ -179,8 +180,8 @@ func (this *Integer) TokenLiteral() string {
 func (this *Integer) String() string {
 	return this.Tok.Literal
 }
-func (this *Integer) Eval() object.Object {
-	return &object.Integer{Value: this.Value}
+func (this *Integer) Eval() (object.Object, error) {
+	return &object.Integer{Value: this.Value}, nil
 }
 
 // Boolean : implement Expression
@@ -196,8 +197,8 @@ func (this *Boolean) TokenLiteral() string {
 func (this *Boolean) String() string {
 	return this.Tok.Literal
 }
-func (this *Boolean) Eval() object.Object {
-	return object.ToBoolean(this.Value)
+func (this *Boolean) Eval() (object.Object, error) {
+	return object.ToBoolean(this.Value), nil
 }
 
 type IfClause struct {
@@ -239,9 +240,9 @@ func (this *IfExpression) String() string {
 	}
 	return out.String()
 }
-func (this *IfExpression) Eval() object.Object {
+func (this *IfExpression) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("IfExpression.Eval not implement")
 }
 
 // Function : implement Expression
@@ -270,9 +271,9 @@ func (this *Function) String() string {
 
 	return out.String()
 }
-func (this *Function) Eval() object.Object {
+func (this *Function) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Function.Eval not implement")
 }
 
 // Call : implement Expression
@@ -301,9 +302,9 @@ func (this *Call) String() string {
 
 	return out.String()
 }
-func (this *Call) Eval() object.Object {
+func (this *Call) Eval() (object.Object, error) {
 	// TODO
-	return nil
+	return nil, fmt.Errorf("Call.Eval not implement")
 }
 
 // PrefixExpression : implement Expression
@@ -325,8 +326,12 @@ func (this *PrefixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *PrefixExpression) Eval() object.Object {
-	return evalPrefixExpression(this.Op, this.Right.Eval())
+func (this *PrefixExpression) Eval() (object.Object, error) {
+	right, err := this.Right.Eval()
+	if nil != err {
+		return nil, fmt.Errorf("PrefixExpression.Eval: this.Right.Eval() error, %v", err)
+	}
+	return evalPrefixExpression(this.Op, right)
 }
 
 // InfixExpression : implement Expression
@@ -352,8 +357,14 @@ func (this *InfixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *InfixExpression) Eval() object.Object {
-	left := this.Left.Eval()
-	right := this.Right.Eval()
+func (this *InfixExpression) Eval() (object.Object, error) {
+	left, err := this.Left.Eval()
+	if nil != err {
+		return nil, fmt.Errorf("InfixExpression.Eval: this.Left.Eval() error, %v", err)
+	}
+	right, err := this.Right.Eval()
+	if nil != err {
+		return nil, fmt.Errorf("InfixExpression.Eval: this.Right.Eval() error, %v", err)
+	}
 	return evalInfixExpression(this.Op, left, right)
 }

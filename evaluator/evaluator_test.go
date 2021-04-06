@@ -14,7 +14,7 @@ func testEval(input string) (object.Object, error) {
 		return nil, err
 	}
 	program := p.ParseProgram()
-	return program.Eval(), nil
+	return program.Eval()
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -80,6 +80,14 @@ func TestEvalBooleanExpr(t *testing.T) {
 	}{
 		{"true", true},
 		{"false", false},
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 < 1", false},
+		{"1 > 1", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 == 2", false},
+		{"1 != 2", true},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)
