@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 
-	"hermes/lexer"
-	"hermes/parser"
+	"Q/lexer"
+	"Q/parser"
 )
 
 func repl(in io.Reader, out io.Writer) {
@@ -34,10 +34,15 @@ func repl(in io.Reader, out io.Writer) {
 			}
 			continue
 		}
-		val := program.Eval()
-		if val != nil {
-			io.WriteString(out, val.Inspect())
+		val, err := program.Eval()
+		if nil != err {
+			io.WriteString(out, err.Error())
 			io.WriteString(out, "\n")
+		} else {
+			if val != nil {
+				io.WriteString(out, val.Inspect())
+				io.WriteString(out, "\n")
+			}
 		}
 	}
 }

@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"hermes/ast"
-	"hermes/token"
+	"Q/ast"
+	"Q/token"
 )
 
 func stmtEnd(scanner *scanner) bool {

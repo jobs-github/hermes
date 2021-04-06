@@ -1,8 +1,8 @@
 package object
 
 import (
+	"Q/token"
 	"fmt"
-	"hermes/token"
 )
 
 const (

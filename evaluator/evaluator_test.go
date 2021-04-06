@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"hermes/lexer"
-	"hermes/object"
-	"hermes/parser"
+	"Q/lexer"
+	"Q/object"
+	"Q/parser"
 	"testing"
 )
 

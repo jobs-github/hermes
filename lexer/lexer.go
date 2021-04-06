@@ -1,7 +1,7 @@
 package lexer
 
 import (
-	"hermes/token"
+	"Q/token"
 )
 
 type Lexer struct {

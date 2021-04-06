@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"Q/lexer"
+	"Q/token"
 	"fmt"
-	"hermes/lexer"
-	"hermes/token"
 )
 
 type scanner struct {

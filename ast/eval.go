@@ -1,9 +1,9 @@
 package ast
 
 import (
+	"Q/object"
+	"Q/token"
 	"fmt"
-	"hermes/object"
-	"hermes/token"
 )
 
 func evalStatements(stmts StatementSlice) (object.Object, error) {

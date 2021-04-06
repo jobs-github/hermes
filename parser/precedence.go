@@ -1,6 +1,6 @@
 package parser
 
-import "hermes/token"
+import "Q/token"
 
 const (
 	_ int = iota

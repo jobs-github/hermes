@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"hermes/token"
+	"Q/token"
 	"testing"
 )
 

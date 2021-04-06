@@ -1,10 +1,10 @@
 package parser
 
 import (
+	"Q/ast"
+	"Q/lexer"
+	"Q/token"
 	"fmt"
-	"hermes/ast"
-	"hermes/lexer"
-	"hermes/token"
 )
 
 type decodeInfix func(ast.Expression) ast.Expression

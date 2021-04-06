@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"Q/ast"
+	"Q/lexer"
 	"fmt"
-	"hermes/ast"
-	"hermes/lexer"
 	"reflect"
 	"testing"
 )

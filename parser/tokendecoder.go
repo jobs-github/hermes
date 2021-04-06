@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"Q/ast"
+	"Q/token"
 	"fmt"
-	"hermes/ast"
-	"hermes/token"
 	"strconv"
 )
 

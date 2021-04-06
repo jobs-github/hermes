@@ -1,6 +1,6 @@
 package parser
 
-import "hermes/ast"
+import "Q/ast"
 
 type parseBlockStmtFn func() *ast.BlockStmt
 type parseExpressionFn func(precedence int) ast.Expression

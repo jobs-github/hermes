@@ -1,10 +1,10 @@
 package ast
 
 import (
+	"Q/object"
+	"Q/token"
 	"bytes"
 	"fmt"
-	"hermes/object"
-	"hermes/token"
 	"strings"
 )
 

@@ -1,4 +1,4 @@
-module hermes
+module Q
 
 go 1.14
 
