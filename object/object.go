@@ -49,6 +49,7 @@ type Object interface {
 	Not() (Object, error)
 	Opposite() (Object, error)
 	Calc(op *token.Token, right Object) (Object, error)
+	True() bool
 
 	calcInteger(op *token.Token, left *Integer) (Object, error)
 	calcBoolean(op *token.Token, left *Boolean) (Object, error)
@@ -82,6 +83,13 @@ func (this *Integer) Not() (Object, error) {
 
 func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcInteger(op, this)
+}
+
+func (this *Integer) True() bool {
+	if 0 == this.Value {
+		return false
+	}
+	return true
 }
 
 func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error) {
@@ -180,6 +188,10 @@ func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcBoolean(op, this)
 }
 
+func (this *Boolean) True() bool {
+	return this.Value
+}
+
 func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	switch op.Type {
 	// TODO
@@ -232,6 +244,10 @@ func (this *Null) Not() (Object, error) {
 
 func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcNull(op, this)
+}
+
+func (this *Null) True() bool {
+	return false
 }
 
 func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {

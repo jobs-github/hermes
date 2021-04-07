@@ -163,8 +163,7 @@ func (this *BlockStmt) String() string {
 	return out.String()
 }
 func (this *BlockStmt) Eval() (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("BlockStmt.Eval not implement")
+	return evalStatements(this.Stmts)
 }
 
 // Integer : implement Expression
@@ -257,8 +256,19 @@ func (this *IfExpression) String() string {
 	return out.String()
 }
 func (this *IfExpression) Eval() (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("IfExpression.Eval not implement")
+	for _, clause := range this.Clauses {
+		cond, err := clause.If.Eval()
+		if nil != err {
+			return nil, fmt.Errorf("IfExpression.Eval: %v, err: %v", clause.If.String(), err)
+		}
+		if cond.True() {
+			return clause.Then.Eval()
+		}
+	}
+	if nil != this.Else {
+		return this.Else.Eval()
+	}
+	return object.Nil, nil
 }
 
 // Function : implement Expression
@@ -382,5 +392,5 @@ func (this *InfixExpression) Eval() (object.Object, error) {
 	if nil != err {
 		return nil, fmt.Errorf("InfixExpression.Eval: this.Right.Eval() error, %v", err)
 	}
-	return evalInfixExpression(this.Op, left, right)
+	return left.Calc(this.Op, right)
 }

@@ -30,6 +30,15 @@ func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
 	return true
 }
 
+func testNullObject(t *testing.T, obj object.Object) bool {
+	_, ok := obj.(*object.Null)
+	if !ok {
+		t.Errorf("object is not null, got=%v", obj)
+		return false
+	}
+	return true
+}
+
 func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 	result, ok := obj.(*object.Boolean)
 	if !ok {
@@ -142,5 +151,34 @@ func TestBangOp(t *testing.T) {
 			t.Fatal(err)
 		}
 		testBooleanObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestIfElseExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"if (true) { 10 }", 10},
+		{"if (false) { 10 }", nil},
+		{"if (1) { 10 }", 10},
+		{"if (1 < 2) { 10 }", 10},
+		{"if (1 > 2) { 10 }", nil},
+		{"if (1 > 2) { 10 } else { 20 }", 20},
+		{"if (1 < 2) { 10 } else { 20 }", 10},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		iv, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(iv))
+		} else {
+			if !testNullObject(t, evaluated) {
+				t.Fatal(tt.input)
+			}
+		}
 	}
 }

@@ -28,7 +28,3 @@ func evalPrefixExpression(op *token.Token, right object.Object) (object.Object, 
 		return nil, fmt.Errorf("evalPrefixExpression: unsupport op %v(%v)", op.Literal, op.Type)
 	}
 }
-
-func evalInfixExpression(op *token.Token, left object.Object, right object.Object) (object.Object, error) {
-	return left.Calc(op, right)
-}
