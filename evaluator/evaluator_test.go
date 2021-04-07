@@ -63,6 +63,13 @@ func TestEvalIntegerExpr(t *testing.T) {
 		{"3 * 3 * 3 + 10", 37},
 		{"3 * (3 * 3) + 10", 37},
 		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
+		{"15 % 10", 5},
+		{"1 && 2", 2},
+		{"2 && 1", 1},
+		{"0 && 2", 0},
+		{"1 || 2", 1},
+		{"2 || 1", 2},
+		{"0 || 2", 2},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)
@@ -84,10 +91,27 @@ func TestEvalBooleanExpr(t *testing.T) {
 		{"1 > 2", false},
 		{"1 < 1", false},
 		{"1 > 1", false},
+		{"1 >= 1", true},
+		{"1 <= 1", true},
 		{"1 == 1", true},
 		{"1 != 1", false},
 		{"1 == 2", false},
 		{"1 != 2", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"false != true", true},
+		{"(1 < 2) == true", true},
+		{"(1 < 2) == false", false},
+		{"(1 > 2) == true", false},
+		{"(1 > 2) == false", true},
+		{"true && true", true},
+		{"true && false", false},
+		{"false && false", false},
+		{"true || true", true},
+		{"true || false", true},
+		{"false || false", false},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)

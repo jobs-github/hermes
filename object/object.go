@@ -49,7 +49,10 @@ type Object interface {
 	Not() (Object, error)
 	Opposite() (Object, error)
 	Calc(op *token.Token, right Object) (Object, error)
+
 	calcInteger(op *token.Token, left *Integer) (Object, error)
+	calcBoolean(op *token.Token, left *Boolean) (Object, error)
+	calcNull(op *token.Token, left *Null) (Object, error)
 }
 
 // Integer : implement Object
@@ -95,16 +98,53 @@ func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error)
 		return &Integer{Value: left.Value % this.Value}, nil
 	case token.LT:
 		return ToBoolean(left.Value < this.Value), nil
+	case token.LEQ:
+		return ToBoolean(left.Value <= this.Value), nil
 	case token.GT:
 		return ToBoolean(left.Value > this.Value), nil
+	case token.GEQ:
+		return ToBoolean(left.Value >= this.Value), nil
 	case token.EQ:
 		return ToBoolean(left.Value == this.Value), nil
 	case token.NEQ:
 		return ToBoolean(left.Value != this.Value), nil
-	// TODO
+	case token.AND:
+		return this.and(left)
+	case token.OR:
+		return this.or(left)
 	default:
 		return nil, fmt.Errorf("Integer.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
 	}
+}
+
+func (this *Integer) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
+	switch op.Type {
+	// TODO
+	default:
+		return nil, fmt.Errorf("Integer.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Integer) calcNull(op *token.Token, left *Null) (Object, error) {
+	switch op.Type {
+	// TODO
+	default:
+		return nil, fmt.Errorf("Integer.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Integer) and(left *Integer) (Object, error) {
+	if 0 == left.Value {
+		return left, nil
+	}
+	return this, nil
+}
+
+func (this *Integer) or(left *Integer) (Object, error) {
+	if 0 != left.Value {
+		return left, nil
+	}
+	return this, nil
 }
 
 // Boolean : implement Object
@@ -137,13 +177,38 @@ func (this *Boolean) Not() (Object, error) {
 }
 
 func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
-	// TODO
-	return nil, fmt.Errorf("Boolean.Calc: not implement")
+	return right.calcBoolean(op, this)
 }
 
 func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {
+	switch op.Type {
 	// TODO
-	return nil, fmt.Errorf("Boolean.calcInteger: not implement")
+	default:
+		return nil, fmt.Errorf("Boolean.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Boolean) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
+	switch op.Type {
+	case token.EQ:
+		return ToBoolean(left.Value == this.Value), nil
+	case token.NEQ:
+		return ToBoolean(left.Value != this.Value), nil
+	case token.AND:
+		return ToBoolean(left.Value && this.Value), nil
+	case token.OR:
+		return ToBoolean(left.Value || this.Value), nil
+	default:
+		return nil, fmt.Errorf("Boolean.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Boolean) calcNull(op *token.Token, left *Null) (Object, error) {
+	switch op.Type {
+	// TODO
+	default:
+		return nil, fmt.Errorf("Boolean.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
+	}
 }
 
 // Null : implement Object
@@ -166,11 +231,32 @@ func (this *Null) Not() (Object, error) {
 }
 
 func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
-	// TODO
-	return nil, fmt.Errorf("Null.Calc: not implement")
+	return right.calcNull(op, this)
 }
 
 func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {
+	switch op.Type {
 	// TODO
-	return nil, fmt.Errorf("Null.calcInteger: not implement")
+	default:
+		return nil, fmt.Errorf("Null.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Null) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
+	switch op.Type {
+	// TODO
+	default:
+		return nil, fmt.Errorf("Null.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+	}
+}
+
+func (this *Null) calcNull(op *token.Token, left *Null) (Object, error) {
+	switch op.Type {
+	case token.EQ:
+		return ToBoolean(true), nil
+	case token.NEQ:
+		return ToBoolean(false), nil
+	default:
+		return nil, fmt.Errorf("Null.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
+	}
 }
