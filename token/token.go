@@ -40,6 +40,7 @@ const (
 	//keyword_beg
 	TRUE
 	FALSE
+	NULL
 	FUNC
 	VAR
 	IF
@@ -65,6 +66,7 @@ var (
 	keywords = map[string]TokenType{
 		"true":   TRUE,
 		"false":  FALSE,
+		"null":   NULL,
 		"func":   FUNC,
 		"var":    VAR,
 		"if":     IF,
@@ -99,6 +101,7 @@ var (
 		RBRACE:    "RBRACE",
 		TRUE:      "TRUE",
 		FALSE:     "FALSE",
+		NULL:      "NULL",
 		FUNC:      "FUNC",
 		VAR:       "VAR",
 		IF:        "IF",

@@ -21,6 +21,7 @@ func newTokenDecoders(
 	identifierDecoder := &identifier{s}
 	integerDecoder := &integer{s}
 	booleanDecoder := &boolean{s}
+	nullDecoder := &null{s}
 	prefixExprDecoder := &prefixExpr{s, parseExpression}
 	groupedExprDecoder := &groupedExpr{s, parseExpression}
 	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
@@ -31,6 +32,7 @@ func newTokenDecoders(
 		token.INT:    integerDecoder,
 		token.TRUE:   booleanDecoder,
 		token.FALSE:  booleanDecoder,
+		token.NULL:   nullDecoder,
 		token.NOT:    prefixExprDecoder,
 		token.SUB:    prefixExprDecoder,
 		token.LPAREN: groupedExprDecoder,
@@ -71,6 +73,15 @@ func (this *integer) decode() ast.Expression {
 	}
 	expr.Value = val
 	return expr
+}
+
+// null : implement tokenDecoder
+type null struct {
+	scanner *scanner
+}
+
+func (this *null) decode() ast.Expression {
+	return &ast.Null{Tok: this.scanner.curTok}
 }
 
 // prefixExpr : implement tokenDecoder

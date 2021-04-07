@@ -201,6 +201,22 @@ func (this *Boolean) Eval() (object.Object, error) {
 	return object.ToBoolean(this.Value), nil
 }
 
+// Null : implement Expression
+type Null struct {
+	Tok *token.Token
+}
+
+func (this *Null) expressionNode() {}
+func (this *Null) TokenLiteral() string {
+	return this.Tok.Literal
+}
+func (this *Null) String() string {
+	return this.Tok.Literal
+}
+func (this *Null) Eval() (object.Object, error) {
+	return object.Nil, nil
+}
+
 type IfClause struct {
 	If   Expression
 	Then *BlockStmt

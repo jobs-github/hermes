@@ -112,6 +112,8 @@ func TestEvalBooleanExpr(t *testing.T) {
 		{"true || true", true},
 		{"true || false", true},
 		{"false || false", false},
+		{"null == null", true},
+		{"null != null", false},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)
