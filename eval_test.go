@@ -1,4 +1,4 @@
-package evaluator
+package main
 
 import (
 	"Q/lexer"
