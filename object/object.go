@@ -49,7 +49,7 @@ type Object interface {
 	Not() (Object, error)
 	Opposite() (Object, error)
 	Calc(op *token.Token, right Object) (Object, error)
-	CalcInteger(op *token.Token, left *Integer) (Object, error)
+	calcInteger(op *token.Token, left *Integer) (Object, error)
 }
 
 // Integer : implement Object
@@ -78,10 +78,10 @@ func (this *Integer) Not() (Object, error) {
 }
 
 func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
-	return right.CalcInteger(op, this)
+	return right.calcInteger(op, this)
 }
 
-func (this *Integer) CalcInteger(op *token.Token, left *Integer) (Object, error) {
+func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	switch op.Type {
 	case token.ADD:
 		return &Integer{Value: left.Value + this.Value}, nil
@@ -103,7 +103,7 @@ func (this *Integer) CalcInteger(op *token.Token, left *Integer) (Object, error)
 		return ToBoolean(left.Value != this.Value), nil
 	// TODO
 	default:
-		return nil, fmt.Errorf("Integer.CalcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("Integer.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }
 
@@ -141,9 +141,9 @@ func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 	return nil, fmt.Errorf("Boolean.Calc: not implement")
 }
 
-func (this *Boolean) CalcInteger(op *token.Token, left *Integer) (Object, error) {
+func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	// TODO
-	return nil, fmt.Errorf("Boolean.CalcInteger: not implement")
+	return nil, fmt.Errorf("Boolean.calcInteger: not implement")
 }
 
 // Null : implement Object
@@ -170,7 +170,7 @@ func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 	return nil, fmt.Errorf("Null.Calc: not implement")
 }
 
-func (this *Null) CalcInteger(op *token.Token, left *Integer) (Object, error) {
+func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	// TODO
-	return nil, fmt.Errorf("Null.CalcInteger: not implement")
+	return nil, fmt.Errorf("Null.calcInteger: not implement")
 }
