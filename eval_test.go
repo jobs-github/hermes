@@ -52,11 +52,31 @@ func testBooleanObject(t *testing.T, obj object.Object, expected bool) bool {
 	return true
 }
 
-func TestEvalIntegerExpr(t *testing.T) {
+func testEvalObject(t *testing.T, evaluated object.Object, expected interface{}) {
+	switch et := expected.(type) {
+	case bool:
+		testBooleanObject(t, evaluated, et)
+	case object.Null:
+		testNullObject(t, evaluated)
+	case int:
+		testIntegerObject(t, evaluated, int64(et))
+	}
+}
+
+func TestEvalExpr(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected int64
+		expected interface{}
 	}{
+		{"!true", false},
+		{"!false", true},
+		{"!5", false},
+		{"!!true", true},
+		{"!!false", false},
+		{"!!5", true},
+		{"!null", true},
+		{"!!null", false},
+
 		{"5", 5},
 		{"10", 10},
 		{"-5", -5},
@@ -73,27 +93,25 @@ func TestEvalIntegerExpr(t *testing.T) {
 		{"3 * (3 * 3) + 10", 37},
 		{"(5 + 10 * 2 + 15 / 3) * 2 + -10", 50},
 		{"15 % 10", 5},
+
 		{"1 && 2", 2},
 		{"2 && 1", 1},
 		{"0 && 2", 0},
 		{"1 || 2", 1},
 		{"2 || 1", 2},
 		{"0 || 2", 2},
-	}
-	for _, tt := range tests {
-		evaluated, err := testEval(tt.input)
-		if nil != err {
-			t.Fatal(err)
-		}
-		testIntegerObject(t, evaluated, tt.expected)
-	}
-}
 
-func TestEvalBooleanExpr(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected bool
-	}{
+		{"true + 1", 2},
+		{"false + 1", 1},
+		{"true - 1", 0},
+		{"false - 1", -1},
+		{"true * 2", 2},
+		{"false * 2", 0},
+		{"true / 2", 0},
+		{"false / 2", 0},
+		{"true % 2", 1},
+		{"false % 2", 0},
+
 		{"true", true},
 		{"false", false},
 		{"1 < 2", true},
@@ -106,6 +124,65 @@ func TestEvalBooleanExpr(t *testing.T) {
 		{"1 != 1", false},
 		{"1 == 2", false},
 		{"1 != 2", true},
+
+		{"true > 1", false},
+		{"true >= 1", true},
+		{"true < 1", false},
+		{"true <= 1", true},
+		{"true == 1", true},
+		{"false > 0", false},
+		{"false >= 0", true},
+		{"false < 0", false},
+		{"false <= 0", true},
+		{"false == 0", true},
+
+		{"true && 2", 2},
+		{"2 && true", 1},
+		{"false && 2", 0},
+		{"true || 2", 1},
+		{"2 || true", 2},
+		{"false || 2", 2},
+
+		{"null > 0", false},
+		{"null >= 0", false},
+		{"null < 0", true},
+		{"null <= 0", true},
+		{"null != 0", true},
+		{"null == 0", false},
+		{"null && 0", object.Nil},
+		{"null || 0", 0},
+
+		{"null > false", false},
+		{"null >= false", false},
+		{"null < false", true},
+		{"null <= false", true},
+		{"null != false", true},
+		{"null == false", false},
+		{"null && false", object.Nil},
+		{"null || false", false},
+
+		{"0 > null", true},
+		{"0 >= null", true},
+		{"0 < null", false},
+		{"0 <= null", false},
+		{"0 != null", true},
+		{"0 == null", false},
+		{"0 && null", 0},
+		{"1 && null", object.Nil},
+		{"0 || null", object.Nil},
+		{"1 || null", 1},
+
+		{"false > null", true},
+		{"false >= null", true},
+		{"false < null", false},
+		{"false <= null", false},
+		{"false != null", true},
+		{"false == null", false},
+		{"false && null", false},
+		{"true && null", object.Nil},
+		{"false || null", object.Nil},
+		{"true || null", true},
+
 		{"true == true", true},
 		{"false == false", true},
 		{"true == false", false},
@@ -121,36 +198,31 @@ func TestEvalBooleanExpr(t *testing.T) {
 		{"true || true", true},
 		{"true || false", true},
 		{"false || false", false},
+		{"true + true", 2},
+		{"true - true", 0},
+		{"true * true", 1},
+		{"true / true", 1},
+		{"true % true", 0},
+		{"true > true", false},
+		{"true >= true", true},
+		{"true < true", false},
+		{"true <= true", true},
+
 		{"null == null", true},
 		{"null != null", false},
+		{"null > null", false},
+		{"null >= null", true},
+		{"null < null", false},
+		{"null <= null", true},
+		{"null && null", object.Nil},
+		{"null || null", object.Nil},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)
 		if nil != err {
 			t.Fatal(err)
 		}
-		testBooleanObject(t, evaluated, tt.expected)
-	}
-}
-
-func TestBangOp(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected bool
-	}{
-		{"!true", false},
-		{"!false", true},
-		{"!5", false},
-		{"!!true", true},
-		{"!!false", false},
-		{"!!5", true},
-	}
-	for _, tt := range tests {
-		evaluated, err := testEval(tt.input)
-		if nil != err {
-			t.Fatal(err)
-		}
-		testBooleanObject(t, evaluated, tt.expected)
+		testEvalObject(t, evaluated, tt.expected)
 	}
 }
 
@@ -174,13 +246,6 @@ func TestIfElseExpressions(t *testing.T) {
 		if nil != err {
 			t.Fatal(err)
 		}
-		iv, ok := tt.expected.(int)
-		if ok {
-			testIntegerObject(t, evaluated, int64(iv))
-		} else {
-			if !testNullObject(t, evaluated) {
-				t.Fatal(tt.input)
-			}
-		}
+		testEvalObject(t, evaluated, tt.expected)
 	}
 }

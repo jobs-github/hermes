@@ -9,6 +9,7 @@ const (
 	ObjectTypeInteger ObjectType = iota
 	ObjectTypeBoolean
 	ObjectTypeNull
+	ObjectTypeReturnValue
 )
 
 var (
@@ -19,9 +20,10 @@ var (
 
 var (
 	objectTypeStrings = map[ObjectType]string{
-		ObjectTypeInteger: "integer",
-		ObjectTypeBoolean: "boolean",
-		ObjectTypeNull:    "null",
+		ObjectTypeInteger:     "integer",
+		ObjectTypeBoolean:     "boolean",
+		ObjectTypeNull:        "null",
+		ObjectTypeReturnValue: "return_value",
 	}
 )
 
@@ -40,6 +42,41 @@ func ToBoolean(v bool) *Boolean {
 		return True
 	} else {
 		return False
+	}
+}
+
+func toInt64(v bool) int64 {
+	if v {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func toInteger(v bool) *Integer {
+	return &Integer{Value: toInt64(v)}
+}
+
+func infixNull(op *token.Token, right Object, method string) (Object, error) {
+	switch op.Type {
+	case token.LT:
+		return ToBoolean(true), nil
+	case token.LEQ:
+		return ToBoolean(true), nil
+	case token.GT:
+		return ToBoolean(false), nil
+	case token.GEQ:
+		return ToBoolean(false), nil
+	case token.EQ:
+		return ToBoolean(false), nil
+	case token.NEQ:
+		return ToBoolean(true), nil
+	case token.AND:
+		return Nil, nil
+	case token.OR:
+		return right, nil
+	default:
+		return nil, fmt.Errorf("infixNull: (%v) unsupported op %v(%v)", method, op.Literal, op.Type)
 	}
 }
 
@@ -126,19 +163,11 @@ func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error)
 }
 
 func (this *Integer) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
-	switch op.Type {
-	// TODO
-	default:
-		return nil, fmt.Errorf("Integer.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
-	}
+	return this.calcInteger(op, toInteger(left.Value))
 }
 
 func (this *Integer) calcNull(op *token.Token, left *Null) (Object, error) {
-	switch op.Type {
-	// TODO
-	default:
-		return nil, fmt.Errorf("Integer.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
-	}
+	return infixNull(op, this, "Integer.calcNull")
 }
 
 func (this *Integer) and(left *Integer) (Object, error) {
@@ -193,15 +222,30 @@ func (this *Boolean) True() bool {
 }
 
 func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {
-	switch op.Type {
-	// TODO
-	default:
-		return nil, fmt.Errorf("Boolean.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
-	}
+	right := toInteger(this.Value)
+	return right.calcInteger(op, left)
 }
 
 func (this *Boolean) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
 	switch op.Type {
+	case token.ADD:
+		return &Integer{Value: toInt64(left.Value) + toInt64(this.Value)}, nil
+	case token.SUB:
+		return &Integer{Value: toInt64(left.Value) - toInt64(this.Value)}, nil
+	case token.MUL:
+		return &Integer{Value: toInt64(left.Value) * toInt64(this.Value)}, nil
+	case token.DIV:
+		return &Integer{Value: toInt64(left.Value) / toInt64(this.Value)}, nil
+	case token.MOD:
+		return &Integer{Value: toInt64(left.Value) % toInt64(this.Value)}, nil
+	case token.LT:
+		return ToBoolean(toInt64(left.Value) < toInt64(this.Value)), nil
+	case token.LEQ:
+		return ToBoolean(toInt64(left.Value) <= toInt64(this.Value)), nil
+	case token.GT:
+		return ToBoolean(toInt64(left.Value) > toInt64(this.Value)), nil
+	case token.GEQ:
+		return ToBoolean(toInt64(left.Value) >= toInt64(this.Value)), nil
 	case token.EQ:
 		return ToBoolean(left.Value == this.Value), nil
 	case token.NEQ:
@@ -216,11 +260,7 @@ func (this *Boolean) calcBoolean(op *token.Token, left *Boolean) (Object, error)
 }
 
 func (this *Boolean) calcNull(op *token.Token, left *Null) (Object, error) {
-	switch op.Type {
-	// TODO
-	default:
-		return nil, fmt.Errorf("Boolean.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
-	}
+	return infixNull(op, this, "Boolean.calcNull")
 }
 
 // Null : implement Object
@@ -250,9 +290,52 @@ func (this *Null) True() bool {
 	return false
 }
 
+func (this *Null) andInteger(left *Integer) Object {
+	if 0 == left.Value {
+		return left
+	}
+	return Nil
+}
+
+func (this *Null) andBoolean(left *Boolean) Object {
+	if false == left.Value {
+		return left
+	}
+	return Nil
+}
+
+func (this *Null) orInteger(left *Integer) Object {
+	if 0 != left.Value {
+		return left
+	}
+	return Nil
+}
+
+func (this *Null) orBoolean(left *Boolean) Object {
+	if false != left.Value {
+		return left
+	}
+	return Nil
+}
+
 func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	switch op.Type {
-	// TODO
+	case token.LT:
+		return ToBoolean(false), nil
+	case token.LEQ:
+		return ToBoolean(false), nil
+	case token.GT:
+		return ToBoolean(true), nil
+	case token.GEQ:
+		return ToBoolean(true), nil
+	case token.EQ:
+		return ToBoolean(false), nil
+	case token.NEQ:
+		return ToBoolean(true), nil
+	case token.AND:
+		return this.andInteger(left), nil
+	case token.OR:
+		return this.orInteger(left), nil
 	default:
 		return nil, fmt.Errorf("Null.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
 	}
@@ -260,19 +343,75 @@ func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {
 
 func (this *Null) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
 	switch op.Type {
-	// TODO
+	case token.AND:
+		return this.andBoolean(left), nil
+	case token.OR:
+		return this.orBoolean(left), nil
 	default:
-		return nil, fmt.Errorf("Null.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+		return this.calcInteger(op, toInteger(left.Value))
 	}
 }
 
 func (this *Null) calcNull(op *token.Token, left *Null) (Object, error) {
 	switch op.Type {
+	case token.LT:
+		return ToBoolean(false), nil
+	case token.LEQ:
+		return ToBoolean(true), nil
+	case token.GT:
+		return ToBoolean(false), nil
+	case token.GEQ:
+		return ToBoolean(true), nil
 	case token.EQ:
 		return ToBoolean(true), nil
 	case token.NEQ:
 		return ToBoolean(false), nil
+	case token.AND:
+		return this, nil
+	case token.OR:
+		return this, nil
 	default:
 		return nil, fmt.Errorf("Null.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
 	}
+}
+
+// ReturnValue : implement Object
+type ReturnValue struct {
+	Value Object
+}
+
+func (this *ReturnValue) Type() ObjectType {
+	return ObjectTypeReturnValue
+}
+
+func (this *ReturnValue) Inspect() string {
+	return this.Value.Inspect()
+}
+
+func (this *ReturnValue) Opposite() (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+}
+
+func (this *ReturnValue) Not() (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+}
+
+func (this *ReturnValue) Calc(op *token.Token, right Object) (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+}
+
+func (this *ReturnValue) True() bool {
+	return false
+}
+
+func (this *ReturnValue) calcInteger(op *token.Token, left *Integer) (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+}
+
+func (this *ReturnValue) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+}
+
+func (this *ReturnValue) calcNull(op *token.Token, left *Null) (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
 }
