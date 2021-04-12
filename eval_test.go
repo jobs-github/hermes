@@ -249,3 +249,31 @@ func TestIfElseExpressions(t *testing.T) {
 		testEvalObject(t, evaluated, tt.expected)
 	}
 }
+
+func TestReturnStmts(t *testing.T) {
+	stmt := `
+	if (10 > 1) {
+		if (10 > 1) {
+			return 10;
+		}
+		return 1;
+	}
+	`
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"return 10;", 10},
+		{"return 10; 9;", 10},
+		{"return 2 * 5; 9", 10},
+		{"9; return 2 * 5; 9", 10},
+		{stmt, 10},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		testEvalObject(t, evaluated, tt.expected)
+	}
+}

@@ -49,7 +49,7 @@ func (this *Program) String() string {
 }
 
 func (this *Program) Eval() (object.Object, error) {
-	return evalStatements(this.Stmts)
+	return evalStatements(this.Stmts, false)
 }
 
 // Identifier : implement Expression
@@ -122,8 +122,11 @@ func (this *ReturnStmt) String() string {
 	return out.String()
 }
 func (this *ReturnStmt) Eval() (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("ReturnStmt.Eval not implement")
+	val, err := this.ReturnValue.Eval()
+	if nil != err {
+		return nil, fmt.Errorf("ReturnStmt.Eval: %v", err)
+	}
+	return &object.ReturnValue{Value: val}, nil
 }
 
 // ExpressionStmt : implement Statement
@@ -163,7 +166,7 @@ func (this *BlockStmt) String() string {
 	return out.String()
 }
 func (this *BlockStmt) Eval() (object.Object, error) {
-	return evalStatements(this.Stmts)
+	return evalStatements(this.Stmts, true)
 }
 
 // Integer : implement Expression

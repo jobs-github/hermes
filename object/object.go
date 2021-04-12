@@ -87,6 +87,7 @@ type Object interface {
 	Opposite() (Object, error)
 	Calc(op *token.Token, right Object) (Object, error)
 	True() bool
+	Return() (bool, Object)
 
 	calcInteger(op *token.Token, left *Integer) (Object, error)
 	calcBoolean(op *token.Token, left *Boolean) (Object, error)
@@ -127,6 +128,10 @@ func (this *Integer) True() bool {
 		return false
 	}
 	return true
+}
+
+func (this *Integer) Return() (bool, Object) {
+	return false, nil
 }
 
 func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error) {
@@ -221,6 +226,10 @@ func (this *Boolean) True() bool {
 	return this.Value
 }
 
+func (this *Boolean) Return() (bool, Object) {
+	return false, nil
+}
+
 func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	right := toInteger(this.Value)
 	return right.calcInteger(op, left)
@@ -288,6 +297,10 @@ func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 
 func (this *Null) True() bool {
 	return false
+}
+
+func (this *Null) Return() (bool, Object) {
+	return false, nil
 }
 
 func (this *Null) andInteger(left *Integer) Object {
@@ -402,6 +415,10 @@ func (this *ReturnValue) Calc(op *token.Token, right Object) (Object, error) {
 
 func (this *ReturnValue) True() bool {
 	return false
+}
+
+func (this *ReturnValue) Return() (bool, Object) {
+	return true, this.Value
 }
 
 func (this *ReturnValue) calcInteger(op *token.Token, left *Integer) (Object, error) {
