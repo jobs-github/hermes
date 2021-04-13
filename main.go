@@ -7,11 +7,13 @@ import (
 	"os"
 
 	"Q/lexer"
+	"Q/object"
 	"Q/parser"
 )
 
 func repl(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnv()
 	for {
 		fmt.Printf(">> ")
 		scanned := scanner.Scan()
@@ -34,7 +36,7 @@ func repl(in io.Reader, out io.Writer) {
 			}
 			continue
 		}
-		val, err := program.Eval()
+		val, err := program.Eval(env)
 		if nil != err {
 			io.WriteString(out, err.Error())
 			io.WriteString(out, "\n")

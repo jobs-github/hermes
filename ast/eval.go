@@ -6,15 +6,15 @@ import (
 	"fmt"
 )
 
-func evalStatements(stmts StatementSlice, blockStmts bool) (object.Object, error) {
+func evalStatements(env *object.Env, stmts StatementSlice, blockStmts bool) (object.Object, error) {
 	var result object.Object
 	for _, stmt := range stmts {
-		if v, err := stmt.Eval(); nil != err {
+		if v, err := stmt.Eval(env); nil != err {
 			return nil, fmt.Errorf("evalStatements error: %v", err)
 		} else {
 			if needReturn, returnValue := v.Return(); needReturn {
 				if blockStmts {
-					// it stops execution in a possible outer block statement and bubbles up to Program.Eval
+					// it stops execution in a possible deeper block statement and bubbles up to Program.Eval
 					// where it finally get's unwrapped
 					return v, nil
 				} else {

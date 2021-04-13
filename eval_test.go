@@ -14,7 +14,8 @@ func testEval(input string) (object.Object, error) {
 		return nil, err
 	}
 	program := p.ParseProgram()
-	return program.Eval()
+	env := object.NewEnv()
+	return program.Eval(env)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -268,6 +269,25 @@ func TestReturnStmts(t *testing.T) {
 		{"return 2 * 5; 9", 10},
 		{"9; return 2 * 5; 9", 10},
 		{stmt, 10},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		testEvalObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestVarStmts(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"var a = 5; a;", 5},
+		{"var a = 5 * 5; a;", 25},
+		{"var a = 5; var b = a; b;", 5},
+		{"var a = 5; var b = a; var c = a + b + 5; c;", 15},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)

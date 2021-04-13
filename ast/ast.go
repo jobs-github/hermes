@@ -11,7 +11,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
-	Eval() (object.Object, error)
+	Eval(env *object.Env) (object.Object, error)
 }
 
 type Statement interface {
@@ -48,8 +48,8 @@ func (this *Program) String() string {
 	return out.String()
 }
 
-func (this *Program) Eval() (object.Object, error) {
-	return evalStatements(this.Stmts, false)
+func (this *Program) Eval(env *object.Env) (object.Object, error) {
+	return evalStatements(env, this.Stmts, false)
 }
 
 // Identifier : implement Expression
@@ -65,9 +65,12 @@ func (this *Identifier) TokenLiteral() string {
 func (this *Identifier) String() string {
 	return this.Value
 }
-func (this *Identifier) Eval() (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("Identifier.Eval not implement")
+func (this *Identifier) Eval(env *object.Env) (object.Object, error) {
+	val, ok := env.Get(this.Value)
+	if !ok {
+		return nil, fmt.Errorf("Identifier.Eval: `%v` not found", this.Value)
+	}
+	return val, nil
 }
 
 type IdentifierSlice []*Identifier
@@ -95,9 +98,13 @@ func (this *VarStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *VarStmt) Eval() (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("VarStmt.Eval not implement")
+func (this *VarStmt) Eval(env *object.Env) (object.Object, error) {
+	val, err := this.Value.Eval(env)
+	if nil != err {
+		return nil, fmt.Errorf("VarStmt.Eval: %v", err)
+	}
+	env.Set(this.Name.Value, val)
+	return val, nil
 }
 
 // ReturnStmt : implement Statement
@@ -121,8 +128,8 @@ func (this *ReturnStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *ReturnStmt) Eval() (object.Object, error) {
-	val, err := this.ReturnValue.Eval()
+func (this *ReturnStmt) Eval(env *object.Env) (object.Object, error) {
+	val, err := this.ReturnValue.Eval(env)
 	if nil != err {
 		return nil, fmt.Errorf("ReturnStmt.Eval: %v", err)
 	}
@@ -145,8 +152,8 @@ func (this *ExpressionStmt) String() string {
 	}
 	return ""
 }
-func (this *ExpressionStmt) Eval() (object.Object, error) {
-	return this.Expr.Eval()
+func (this *ExpressionStmt) Eval(env *object.Env) (object.Object, error) {
+	return this.Expr.Eval(env)
 }
 
 type BlockStmt struct {
@@ -165,8 +172,8 @@ func (this *BlockStmt) String() string {
 	}
 	return out.String()
 }
-func (this *BlockStmt) Eval() (object.Object, error) {
-	return evalStatements(this.Stmts, true)
+func (this *BlockStmt) Eval(env *object.Env) (object.Object, error) {
+	return evalStatements(env, this.Stmts, true)
 }
 
 // Integer : implement Expression
@@ -182,7 +189,7 @@ func (this *Integer) TokenLiteral() string {
 func (this *Integer) String() string {
 	return this.Tok.Literal
 }
-func (this *Integer) Eval() (object.Object, error) {
+func (this *Integer) Eval(env *object.Env) (object.Object, error) {
 	return &object.Integer{Value: this.Value}, nil
 }
 
@@ -199,7 +206,7 @@ func (this *Boolean) TokenLiteral() string {
 func (this *Boolean) String() string {
 	return this.Tok.Literal
 }
-func (this *Boolean) Eval() (object.Object, error) {
+func (this *Boolean) Eval(env *object.Env) (object.Object, error) {
 	return object.ToBoolean(this.Value), nil
 }
 
@@ -215,7 +222,7 @@ func (this *Null) TokenLiteral() string {
 func (this *Null) String() string {
 	return this.Tok.Literal
 }
-func (this *Null) Eval() (object.Object, error) {
+func (this *Null) Eval(env *object.Env) (object.Object, error) {
 	return object.Nil, nil
 }
 
@@ -258,18 +265,18 @@ func (this *IfExpression) String() string {
 	}
 	return out.String()
 }
-func (this *IfExpression) Eval() (object.Object, error) {
+func (this *IfExpression) Eval(env *object.Env) (object.Object, error) {
 	for _, clause := range this.Clauses {
-		cond, err := clause.If.Eval()
+		cond, err := clause.If.Eval(env)
 		if nil != err {
 			return nil, fmt.Errorf("IfExpression.Eval: %v, err: %v", clause.If.String(), err)
 		}
 		if cond.True() {
-			return clause.Then.Eval()
+			return clause.Then.Eval(env)
 		}
 	}
 	if nil != this.Else {
-		return this.Else.Eval()
+		return this.Else.Eval(env)
 	}
 	return object.Nil, nil
 }
@@ -300,7 +307,7 @@ func (this *Function) String() string {
 
 	return out.String()
 }
-func (this *Function) Eval() (object.Object, error) {
+func (this *Function) Eval(env *object.Env) (object.Object, error) {
 	// TODO
 	return nil, fmt.Errorf("Function.Eval not implement")
 }
@@ -331,7 +338,7 @@ func (this *Call) String() string {
 
 	return out.String()
 }
-func (this *Call) Eval() (object.Object, error) {
+func (this *Call) Eval(env *object.Env) (object.Object, error) {
 	// TODO
 	return nil, fmt.Errorf("Call.Eval not implement")
 }
@@ -355,8 +362,8 @@ func (this *PrefixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *PrefixExpression) Eval() (object.Object, error) {
-	right, err := this.Right.Eval()
+func (this *PrefixExpression) Eval(env *object.Env) (object.Object, error) {
+	right, err := this.Right.Eval(env)
 	if nil != err {
 		return nil, fmt.Errorf("PrefixExpression.Eval: this.Right.Eval() error, %v", err)
 	}
@@ -386,12 +393,12 @@ func (this *InfixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *InfixExpression) Eval() (object.Object, error) {
-	left, err := this.Left.Eval()
+func (this *InfixExpression) Eval(env *object.Env) (object.Object, error) {
+	left, err := this.Left.Eval(env)
 	if nil != err {
 		return nil, fmt.Errorf("InfixExpression.Eval: this.Left.Eval() error, %v", err)
 	}
-	right, err := this.Right.Eval()
+	right, err := this.Right.Eval(env)
 	if nil != err {
 		return nil, fmt.Errorf("InfixExpression.Eval: this.Right.Eval() error, %v", err)
 	}
