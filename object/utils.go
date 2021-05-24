@@ -10,6 +10,7 @@ const (
 	ObjectTypeBoolean
 	ObjectTypeNull
 	ObjectTypeReturnValue
+	ObjectTypeFunction
 )
 
 var (
@@ -24,6 +25,7 @@ var (
 		ObjectTypeBoolean:     "boolean",
 		ObjectTypeNull:        "null",
 		ObjectTypeReturnValue: "return_value",
+		ObjectTypeFunction:    "function",
 	}
 )
 

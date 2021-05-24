@@ -4,6 +4,7 @@ import (
 	"Q/lexer"
 	"Q/object"
 	"Q/parser"
+	"reflect"
 	"testing"
 )
 
@@ -295,5 +296,30 @@ func TestVarStmts(t *testing.T) {
 			t.Fatal(err)
 		}
 		testEvalObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestFunctionObject(t *testing.T) {
+	input := "func(x) { x + 2; };"
+	evaluated, err := testEval(input)
+	if nil != err {
+		t.Fatal(err)
+	}
+	fn, ok := evaluated.(*object.Function)
+	if !ok {
+		t.Fatalf("object is not function, got %v", reflect.TypeOf(evaluated).String())
+	}
+	arguments := fn.Fn.Arguments()
+	if arguments != 1 {
+		t.Fatalf("function has wrong args, got %v", arguments)
+	}
+	argument := fn.Fn.ArgumentOf(0)
+	if argument != "x" {
+		t.Fatalf("argument of 0 not x, got `%v`", argument)
+	}
+	body := fn.Fn.Body()
+	expected := "(x + 2)"
+	if body != expected {
+		t.Fatalf("body not (x + 2), got `%v`", body)
 	}
 }

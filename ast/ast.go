@@ -1,6 +1,7 @@
 package ast
 
 import (
+	"Q/function"
 	"Q/object"
 	"Q/token"
 	"bytes"
@@ -308,8 +309,41 @@ func (this *Function) String() string {
 	return out.String()
 }
 func (this *Function) Eval(env *object.Env) (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("Function.Eval not implement")
+	return &object.Function{Fn: function.Function{
+		Inspect:    this.inspect,
+		Arguments:  this.arguments,
+		ArgumentOf: this.argumentOf,
+		Body:       this.body,
+	}, Env: env}, nil
+}
+
+func (this *Function) inspect() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, p := range this.Args {
+		args = append(args, p.String())
+	}
+	out.WriteString(this.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(this.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
+}
+
+func (this *Function) arguments() int {
+	return len(this.Args)
+}
+
+func (this *Function) argumentOf(idx int) string {
+	return this.Args[idx].String()
+}
+
+func (this *Function) body() string {
+	return this.Body.String()
 }
 
 // Call : implement Expression
