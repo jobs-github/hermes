@@ -38,6 +38,10 @@ func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcBoolean(op, this)
 }
 
+func (this *Boolean) Call(args []Object) (Object, error) {
+	return nil, fmt.Errorf("Boolean.Call unsupported")
+}
+
 func (this *Boolean) True() bool {
 	return this.Value
 }

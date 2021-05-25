@@ -309,7 +309,7 @@ func TestFunctionObject(t *testing.T) {
 	if !ok {
 		t.Fatalf("object is not function, got %v", reflect.TypeOf(evaluated).String())
 	}
-	arguments := fn.Fn.Arguments()
+	arguments := len(fn.Args)
 	if arguments != 1 {
 		t.Fatalf("function has wrong args, got %v", arguments)
 	}
@@ -321,5 +321,26 @@ func TestFunctionObject(t *testing.T) {
 	expected := "(x + 2)"
 	if body != expected {
 		t.Fatalf("body not (x + 2), got `%v`", body)
+	}
+}
+
+func TestFunctionCases(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"var identity = func(x) { x; }; identity(5)", 5},
+		{"var identity = func(x) { return x; }; identity(5)", 5},
+		{"var double = func(x) { x * 2; }; double(5)", 10},
+		{"var add = func(x, y) { x + y; }; add(5, 5)", 10},
+		{"var add = func(x, y) { x + y; }; add(5 + 5, add(5, 5))", 20},
+		{"func(x) { x; }(5)", 5},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		testEvalObject(t, evaluated, tt.expected)
 	}
 }

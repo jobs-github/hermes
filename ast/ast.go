@@ -27,6 +27,18 @@ type Expression interface {
 
 type ExpressionSlice []Expression
 
+func (this *ExpressionSlice) evalArgs(env *object.Env) ([]object.Object, error) {
+	result := []object.Object{}
+	for _, expr := range *this {
+		evaluated, err := expr.Eval(env)
+		if nil != err {
+			return nil, fmt.Errorf("ExpressionSlice.eval | %v", err)
+		}
+		result = append(result, evaluated)
+	}
+	return result, nil
+}
+
 type StatementSlice []Statement
 
 // Program : implement Node
@@ -75,6 +87,14 @@ func (this *Identifier) Eval(env *object.Env) (object.Object, error) {
 }
 
 type IdentifierSlice []*Identifier
+
+func (this *IdentifierSlice) values() []string {
+	v := []string{}
+	for _, i := range *this {
+		v = append(v, i.Value)
+	}
+	return v
+}
 
 // VarStmt : implement Statement
 type VarStmt struct {
@@ -309,12 +329,20 @@ func (this *Function) String() string {
 	return out.String()
 }
 func (this *Function) Eval(env *object.Env) (object.Object, error) {
-	return &object.Function{Fn: function.Function{
-		Inspect:    this.inspect,
-		Arguments:  this.arguments,
-		ArgumentOf: this.argumentOf,
-		Body:       this.body,
-	}, Env: env}, nil
+	return &object.Function{
+		Fn: function.Function{
+			Inspect:    this.inspect,
+			ArgumentOf: this.argumentOf,
+			Body:       this.body,
+		},
+		Args:     this.Args.values(),
+		EvalBody: this.evalBody,
+		Env:      env,
+	}, nil
+}
+
+func (this *Function) evalBody(env *object.Env) (object.Object, error) {
+	return this.Body.Eval(env)
 }
 
 func (this *Function) inspect() string {
@@ -332,10 +360,6 @@ func (this *Function) inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
-}
-
-func (this *Function) arguments() int {
-	return len(this.Args)
 }
 
 func (this *Function) argumentOf(idx int) string {
@@ -373,8 +397,16 @@ func (this *Call) String() string {
 	return out.String()
 }
 func (this *Call) Eval(env *object.Env) (object.Object, error) {
-	// TODO
-	return nil, fmt.Errorf("Call.Eval not implement")
+	fn, err := this.Func.Eval(env)
+	if nil != err {
+		return nil, fmt.Errorf("Call.Eval | %v", err)
+	}
+
+	args, err := this.Args.evalArgs(env)
+	if nil != err {
+		return nil, fmt.Errorf("Call.Eval | %v", err)
+	}
+	return fn.Call(args)
 }
 
 // PrefixExpression : implement Expression

@@ -30,6 +30,10 @@ func (this *ReturnValue) Calc(op *token.Token, right Object) (Object, error) {
 	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
 }
 
+func (this *ReturnValue) Call(args []Object) (Object, error) {
+	return nil, fmt.Errorf("ReturnValue.Call unsupported")
+}
+
 func (this *ReturnValue) True() bool {
 	return false
 }

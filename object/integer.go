@@ -34,6 +34,10 @@ func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcInteger(op, this)
 }
 
+func (this *Integer) Call(args []Object) (Object, error) {
+	return nil, fmt.Errorf("Integer.Call unsupported")
+}
+
 func (this *Integer) True() bool {
 	if 0 == this.Value {
 		return false

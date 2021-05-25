@@ -28,6 +28,10 @@ func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcNull(op, this)
 }
 
+func (this *Null) Call(args []Object) (Object, error) {
+	return nil, fmt.Errorf("Null.Call unsupported")
+}
+
 func (this *Null) True() bool {
 	return false
 }

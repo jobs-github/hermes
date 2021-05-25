@@ -10,6 +10,7 @@ type Object interface {
 	Not() (Object, error)
 	Opposite() (Object, error)
 	Calc(op *token.Token, right Object) (Object, error)
+	Call(args []Object) (Object, error)
 	True() bool
 	Return() (bool, Object)
 
