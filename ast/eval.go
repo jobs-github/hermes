@@ -10,7 +10,7 @@ func evalStatements(env *object.Env, stmts StatementSlice, blockStmts bool) (obj
 	var result object.Object
 	for _, stmt := range stmts {
 		if v, err := stmt.Eval(env); nil != err {
-			return nil, fmt.Errorf("evalStatements error: %v", err)
+			return nil, fmt.Errorf("evalStatements | %v", err)
 		} else {
 			if needReturn, returnValue := v.Return(); needReturn {
 				if blockStmts {
@@ -34,6 +34,6 @@ func evalPrefixExpression(op *token.Token, right object.Object) (object.Object, 
 	case token.SUB:
 		return right.Opposite()
 	default:
-		return nil, fmt.Errorf("evalPrefixExpression: unsupport op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("evalPrefixExpression -> unsupport op %v(%v)", op.Literal, op.Type)
 	}
 }

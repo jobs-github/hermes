@@ -18,7 +18,7 @@ type scanner struct {
 func newScanner(l *lexer.Lexer) (*scanner, error) {
 	toks := l.Parse()
 	if nil == toks || len(toks) < 1 {
-		return nil, fmt.Errorf("no valid token")
+		return nil, fmt.Errorf("newScanner -> no valid token")
 	}
 	s := &scanner{toks: toks, pos: 0, errors: []string{}}
 	s.curTok = toks[0]

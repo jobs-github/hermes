@@ -19,19 +19,19 @@ func (this *ReturnValue) Inspect() string {
 }
 
 func (this *ReturnValue) Opposite() (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+	return nil, fmt.Errorf("ReturnValue.Opposite -> unsupported")
 }
 
 func (this *ReturnValue) Not() (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+	return nil, fmt.Errorf("ReturnValue.Opposite -> unsupported")
 }
 
 func (this *ReturnValue) Calc(op *token.Token, right Object) (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.Opposite: not supported")
+	return nil, fmt.Errorf("ReturnValue.Opposite -> unsupported")
 }
 
 func (this *ReturnValue) Call(args []Object) (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.Call unsupported")
+	return nil, fmt.Errorf("ReturnValue.Call -> unsupported")
 }
 
 func (this *ReturnValue) True() bool {
@@ -43,13 +43,13 @@ func (this *ReturnValue) Return() (bool, Object) {
 }
 
 func (this *ReturnValue) calcInteger(op *token.Token, left *Integer) (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+	return nil, fmt.Errorf("ReturnValue.calcInteger -> unsupported op %v(%v)", op.Literal, op.Type)
 }
 
 func (this *ReturnValue) calcBoolean(op *token.Token, left *Boolean) (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+	return nil, fmt.Errorf("ReturnValue.calcBoolean -> unsupported op %v(%v)", op.Literal, op.Type)
 }
 
 func (this *ReturnValue) calcNull(op *token.Token, left *Null) (Object, error) {
-	return nil, fmt.Errorf("ReturnValue.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
+	return nil, fmt.Errorf("ReturnValue.calcNull -> unsupported op %v(%v)", op.Literal, op.Type)
 }

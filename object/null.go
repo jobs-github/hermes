@@ -17,7 +17,7 @@ func (this *Null) Inspect() string {
 }
 
 func (this *Null) Opposite() (Object, error) {
-	return nil, fmt.Errorf("Null.Opposite: not supported")
+	return nil, fmt.Errorf("Null.Opposite -> unsupported")
 }
 
 func (this *Null) Not() (Object, error) {
@@ -29,7 +29,7 @@ func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 }
 
 func (this *Null) Call(args []Object) (Object, error) {
-	return nil, fmt.Errorf("Null.Call unsupported")
+	return nil, fmt.Errorf("Null.Call -> unsupported")
 }
 
 func (this *Null) True() bool {
@@ -87,7 +87,7 @@ func (this *Null) calcInteger(op *token.Token, left *Integer) (Object, error) {
 	case token.OR:
 		return this.orInteger(left), nil
 	default:
-		return nil, fmt.Errorf("Null.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("Null.calcInteger -> unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }
 
@@ -121,6 +121,6 @@ func (this *Null) calcNull(op *token.Token, left *Null) (Object, error) {
 	case token.OR:
 		return this, nil
 	default:
-		return nil, fmt.Errorf("Null.calcNull: unsupported op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("Null.calcNull -> unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }

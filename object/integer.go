@@ -35,7 +35,7 @@ func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
 }
 
 func (this *Integer) Call(args []Object) (Object, error) {
-	return nil, fmt.Errorf("Integer.Call unsupported")
+	return nil, fmt.Errorf("Integer.Call -> unsupported")
 }
 
 func (this *Integer) True() bool {
@@ -78,7 +78,7 @@ func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error)
 	case token.OR:
 		return this.or(left)
 	default:
-		return nil, fmt.Errorf("Integer.calcInteger: unsupported op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("Integer.calcInteger -> unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }
 

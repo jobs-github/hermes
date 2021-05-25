@@ -81,7 +81,7 @@ func (this *Identifier) String() string {
 func (this *Identifier) Eval(env *object.Env) (object.Object, error) {
 	val, ok := env.Get(this.Value)
 	if !ok {
-		return nil, fmt.Errorf("Identifier.Eval: `%v` not found", this.Value)
+		return nil, fmt.Errorf("Identifier.Eval -> `%v` not found", this.Value)
 	}
 	return val, nil
 }
@@ -122,7 +122,7 @@ func (this *VarStmt) String() string {
 func (this *VarStmt) Eval(env *object.Env) (object.Object, error) {
 	val, err := this.Value.Eval(env)
 	if nil != err {
-		return nil, fmt.Errorf("VarStmt.Eval: %v", err)
+		return nil, fmt.Errorf("VarStmt.Eval | %v", err)
 	}
 	env.Set(this.Name.Value, val)
 	return val, nil
@@ -152,7 +152,7 @@ func (this *ReturnStmt) String() string {
 func (this *ReturnStmt) Eval(env *object.Env) (object.Object, error) {
 	val, err := this.ReturnValue.Eval(env)
 	if nil != err {
-		return nil, fmt.Errorf("ReturnStmt.Eval: %v", err)
+		return nil, fmt.Errorf("ReturnStmt.Eval | %v", err)
 	}
 	return &object.ReturnValue{Value: val}, nil
 }
@@ -290,7 +290,7 @@ func (this *IfExpression) Eval(env *object.Env) (object.Object, error) {
 	for _, clause := range this.Clauses {
 		cond, err := clause.If.Eval(env)
 		if nil != err {
-			return nil, fmt.Errorf("IfExpression.Eval: %v, err: %v", clause.If.String(), err)
+			return nil, fmt.Errorf("IfExpression.Eval -> %v | %v", clause.If.String(), err)
 		}
 		if cond.True() {
 			return clause.Then.Eval(env)
@@ -431,7 +431,7 @@ func (this *PrefixExpression) String() string {
 func (this *PrefixExpression) Eval(env *object.Env) (object.Object, error) {
 	right, err := this.Right.Eval(env)
 	if nil != err {
-		return nil, fmt.Errorf("PrefixExpression.Eval: this.Right.Eval() error, %v", err)
+		return nil, fmt.Errorf("PrefixExpression.Eval -> this.Right.Eval() error | %v", err)
 	}
 	return evalPrefixExpression(this.Op, right)
 }
@@ -462,11 +462,11 @@ func (this *InfixExpression) String() string {
 func (this *InfixExpression) Eval(env *object.Env) (object.Object, error) {
 	left, err := this.Left.Eval(env)
 	if nil != err {
-		return nil, fmt.Errorf("InfixExpression.Eval: this.Left.Eval() error, %v", err)
+		return nil, fmt.Errorf("InfixExpression.Eval -> this.Left.Eval() error | %v", err)
 	}
 	right, err := this.Right.Eval(env)
 	if nil != err {
-		return nil, fmt.Errorf("InfixExpression.Eval: this.Right.Eval() error, %v", err)
+		return nil, fmt.Errorf("InfixExpression.Eval -> this.Right.Eval() error | %v", err)
 	}
 	return left.Calc(this.Op, right)
 }

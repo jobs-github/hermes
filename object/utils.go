@@ -78,6 +78,6 @@ func infixNull(op *token.Token, right Object, method string) (Object, error) {
 	case token.OR:
 		return right, nil
 	default:
-		return nil, fmt.Errorf("infixNull: (%v) unsupported op %v(%v)", method, op.Literal, op.Type)
+		return nil, fmt.Errorf("infixNull -> (%v) unsupported op %v(%v)", method, op.Literal, op.Type)
 	}
 }

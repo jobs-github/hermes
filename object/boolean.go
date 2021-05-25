@@ -39,7 +39,7 @@ func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 }
 
 func (this *Boolean) Call(args []Object) (Object, error) {
-	return nil, fmt.Errorf("Boolean.Call unsupported")
+	return nil, fmt.Errorf("Boolean.Call -> unsupported")
 }
 
 func (this *Boolean) True() bool {
@@ -84,7 +84,7 @@ func (this *Boolean) calcBoolean(op *token.Token, left *Boolean) (Object, error)
 	case token.OR:
 		return ToBoolean(left.Value || this.Value), nil
 	default:
-		return nil, fmt.Errorf("Boolean.calcBoolean: unsupported op %v(%v)", op.Literal, op.Type)
+		return nil, fmt.Errorf("Boolean.calcBoolean -> unsupported op %v(%v)", op.Literal, op.Type)
 	}
 }
 

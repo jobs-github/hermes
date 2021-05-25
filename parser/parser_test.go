@@ -281,7 +281,7 @@ func testLiteralExpression(t *testing.T, expr ast.Expression, want interface{}) 
 	case bool:
 		return testBooleanLiteral(t, expr, v)
 	}
-	t.Errorf("type of expr not supported: %v", reflect.TypeOf(expr).String())
+	t.Errorf("type of expr unsupported: %v", reflect.TypeOf(expr).String())
 	return false
 }
 
