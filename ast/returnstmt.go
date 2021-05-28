@@ -28,8 +28,8 @@ func (this *ReturnStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *ReturnStmt) Eval(env *object.Env) (object.Object, error) {
-	val, err := this.ReturnValue.Eval(env)
+func (this *ReturnStmt) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	val, err := this.ReturnValue.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("ReturnStmt.Eval | %v", err)
 	}

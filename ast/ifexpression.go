@@ -47,18 +47,18 @@ func (this *IfExpression) String() string {
 	}
 	return out.String()
 }
-func (this *IfExpression) Eval(env *object.Env) (object.Object, error) {
+func (this *IfExpression) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	for _, clause := range this.Clauses {
-		cond, err := clause.If.Eval(env)
+		cond, err := clause.If.Eval(env, insideLoop)
 		if nil != err {
 			return nil, fmt.Errorf("IfExpression.Eval -> %v | %v", clause.If.String(), err)
 		}
 		if cond.True() {
-			return clause.Then.Eval(env)
+			return clause.Then.Eval(env, insideLoop)
 		}
 	}
 	if nil != this.Else {
-		return this.Else.Eval(env)
+		return this.Else.Eval(env, insideLoop)
 	}
 	return object.Nil, nil
 }

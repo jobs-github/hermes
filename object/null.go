@@ -28,7 +28,7 @@ func (this *Null) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcNull(op, this)
 }
 
-func (this *Null) Call(args []Object) (Object, error) {
+func (this *Null) Call(args []Object, insideLoop bool) (Object, error) {
 	return nil, fmt.Errorf("Null.Call -> unsupported")
 }
 
@@ -38,6 +38,10 @@ func (this *Null) True() bool {
 
 func (this *Null) Return() (bool, Object) {
 	return false, nil
+}
+
+func (this *Null) Break() (bool, int) {
+	return false, 0
 }
 
 func (this *Null) andInteger(left *Integer) Object {

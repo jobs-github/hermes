@@ -10,7 +10,7 @@ import (
 type Function struct {
 	Fn       function.Function
 	Args     []string
-	EvalBody func(env *Env) (Object, error)
+	EvalBody func(env *Env, insideLoop bool) (Object, error)
 	Env      *Env
 }
 
@@ -35,12 +35,12 @@ func (this *Function) Calc(op *token.Token, right Object) (Object, error) {
 	return nil, fmt.Errorf("Function.Calc -> unsupported")
 }
 
-func (this *Function) Call(args []Object) (Object, error) {
+func (this *Function) Call(args []Object, insideLoop bool) (Object, error) {
 	if len(args) != len(this.Args) {
 		return nil, fmt.Errorf("Function.Call -> %v args provided, but %v args required", len(args), len(this.Args))
 	}
 	innerEnv := newFunctionEnv(this.Env, this.Args, args)
-	evaluated, err := this.EvalBody(innerEnv)
+	evaluated, err := this.EvalBody(innerEnv, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("Function.Call | %v", err)
 	}
@@ -55,8 +55,11 @@ func (this *Function) True() bool {
 }
 
 func (this *Function) Return() (bool, Object) {
-	// TODO
 	return false, nil
+}
+
+func (this *Function) Break() (bool, int) {
+	return false, 0
 }
 
 func (this *Function) calcInteger(op *token.Token, left *Integer) (Object, error) {

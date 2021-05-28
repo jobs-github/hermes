@@ -34,7 +34,7 @@ func (this *Function) String() string {
 
 	return out.String()
 }
-func (this *Function) Eval(env *object.Env) (object.Object, error) {
+func (this *Function) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	return &object.Function{
 		Fn: function.Function{
 			Inspect:    this.inspect,
@@ -47,8 +47,8 @@ func (this *Function) Eval(env *object.Env) (object.Object, error) {
 	}, nil
 }
 
-func (this *Function) evalBody(env *object.Env) (object.Object, error) {
-	return this.Body.Eval(env)
+func (this *Function) evalBody(env *object.Env, insideLoop bool) (object.Object, error) {
+	return this.Body.Eval(env, insideLoop)
 }
 
 func (this *Function) inspect() string {

@@ -30,7 +30,7 @@ func (this *ReturnValue) Calc(op *token.Token, right Object) (Object, error) {
 	return nil, fmt.Errorf("ReturnValue.Opposite -> unsupported")
 }
 
-func (this *ReturnValue) Call(args []Object) (Object, error) {
+func (this *ReturnValue) Call(args []Object, insideLoop bool) (Object, error) {
 	return nil, fmt.Errorf("ReturnValue.Call -> unsupported")
 }
 
@@ -40,6 +40,10 @@ func (this *ReturnValue) True() bool {
 
 func (this *ReturnValue) Return() (bool, Object) {
 	return true, this.Value
+}
+
+func (this *ReturnValue) Break() (bool, int) {
+	return false, 0
 }
 
 func (this *ReturnValue) calcInteger(op *token.Token, left *Integer) (Object, error) {

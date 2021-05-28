@@ -30,8 +30,8 @@ func (this *VarStmt) String() string {
 	out.WriteString(";")
 	return out.String()
 }
-func (this *VarStmt) Eval(env *object.Env) (object.Object, error) {
-	val, err := this.Value.Eval(env)
+func (this *VarStmt) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	val, err := this.Value.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("VarStmt.Eval | %v", err)
 	}

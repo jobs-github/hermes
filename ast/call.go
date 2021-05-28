@@ -34,15 +34,15 @@ func (this *Call) String() string {
 
 	return out.String()
 }
-func (this *Call) Eval(env *object.Env) (object.Object, error) {
-	fn, err := this.Func.Eval(env)
+func (this *Call) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	fn, err := this.Func.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("Call.Eval | %v", err)
 	}
 
-	args, err := this.Args.evalArgs(env)
+	args, err := this.Args.evalArgs(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("Call.Eval | %v", err)
 	}
-	return fn.Call(args)
+	return fn.Call(args, insideLoop)
 }

@@ -23,6 +23,7 @@ func (this *BlockStmt) String() string {
 	}
 	return out.String()
 }
-func (this *BlockStmt) Eval(env *object.Env) (object.Object, error) {
-	return evalStatements(env, this.Stmts, true)
+func (this *BlockStmt) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	// TODO scope
+	return this.Stmts.eval(true, env, insideLoop)
 }

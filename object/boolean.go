@@ -38,7 +38,7 @@ func (this *Boolean) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcBoolean(op, this)
 }
 
-func (this *Boolean) Call(args []Object) (Object, error) {
+func (this *Boolean) Call(args []Object, insideLoop bool) (Object, error) {
 	return nil, fmt.Errorf("Boolean.Call -> unsupported")
 }
 
@@ -48,6 +48,10 @@ func (this *Boolean) True() bool {
 
 func (this *Boolean) Return() (bool, Object) {
 	return false, nil
+}
+
+func (this *Boolean) Break() (bool, int) {
+	return false, 0
 }
 
 func (this *Boolean) calcInteger(op *token.Token, left *Integer) (Object, error) {

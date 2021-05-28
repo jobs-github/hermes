@@ -17,6 +17,6 @@ func (this *Null) TokenLiteral() string {
 func (this *Null) String() string {
 	return this.Tok.Literal
 }
-func (this *Null) Eval(env *object.Env) (object.Object, error) {
+func (this *Null) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	return object.Nil, nil
 }

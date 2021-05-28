@@ -18,6 +18,6 @@ func (this *Integer) TokenLiteral() string {
 func (this *Integer) String() string {
 	return this.Tok.Literal
 }
-func (this *Integer) Eval(env *object.Env) (object.Object, error) {
+func (this *Integer) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	return &object.Integer{Value: this.Value}, nil
 }

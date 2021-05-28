@@ -1,5 +1,7 @@
 package object
 
+import "fmt"
+
 type Env struct {
 	outer *Env
 	m     map[string]Object
@@ -21,6 +23,21 @@ func (this *Env) Get(name string) (Object, bool) {
 func (this *Env) Set(name string, val Object) Object {
 	this.m[name] = val
 	return val
+}
+
+func (this *Env) Assign(name string, val Object) error {
+	if _, ok := this.m[name]; ok {
+		this.m[name] = val
+	} else {
+		return fmt.Errorf("Env.Assign -> `%v` undefined", name)
+		// TODO
+		// if nil == this.outer {
+		// 	return fmt.Errorf("Env.Assign -> `%v` undefined", name)
+		// } else {
+		// 	return this.outer.Assign(name, val)
+		// }
+	}
+	return nil
 }
 
 func newEnclosedEnv(outer *Env) *Env {

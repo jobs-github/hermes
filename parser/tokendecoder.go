@@ -26,6 +26,7 @@ func newTokenDecoders(
 	groupedExprDecoder := &groupedExpr{s, parseExpression}
 	ifExprDecoder := &ifExpr{s, parseExpression, parseBlockStmt}
 	funcDecoder := &funcLiteral{s, parseExpression, parseBlockStmt}
+	forExprDecoder := &forExpr{s, parseBlockStmt}
 
 	return tokenDecoderMap{
 		token.IDENT:  identifierDecoder,
@@ -38,6 +39,7 @@ func newTokenDecoders(
 		token.LPAREN: groupedExprDecoder,
 		token.IF:     ifExprDecoder,
 		token.FUNC:   funcDecoder,
+		token.FOR:    forExprDecoder,
 	}
 }
 
@@ -226,4 +228,19 @@ func (this *funcLiteral) decode() ast.Expression {
 	}
 	lit.Body = this.parseBlockStmt()
 	return lit
+}
+
+// forExpr : implement tokenDecoder
+type forExpr struct {
+	scanner        *scanner
+	parseBlockStmt parseBlockStmtFn
+}
+
+func (this *forExpr) decode() ast.Expression {
+	expr := &ast.ForExpression{Tok: this.scanner.curTok}
+	if !this.scanner.expectPeek(token.LBRACE) {
+		return nil
+	}
+	expr.Loop = this.parseBlockStmt()
+	return expr
 }

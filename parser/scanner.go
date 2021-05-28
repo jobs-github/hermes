@@ -82,3 +82,7 @@ func (this *scanner) expectPeek(t token.TokenType) bool {
 func (this *scanner) expectPeek2(t1 token.TokenType, t2 token.TokenType) bool {
 	return this.peekTok.TypeIs(t1) && this.peekTok2.TypeIs(t2)
 }
+
+func (this *scanner) expectCurPeek(cur token.TokenType, peek token.TokenType) bool {
+	return this.curTok.TypeIs(cur) && this.peekTok.TypeIs(peek)
+}

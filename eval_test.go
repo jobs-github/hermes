@@ -16,7 +16,7 @@ func testEval(input string) (object.Object, error) {
 	}
 	program := p.ParseProgram()
 	env := object.NewEnv()
-	return program.Eval(env)
+	return program.Eval(env, false)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {
@@ -335,6 +335,58 @@ func TestFunctionCases(t *testing.T) {
 		{"var add = func(x, y) { x + y; }; add(5, 5)", 10},
 		{"var add = func(x, y) { x + y; }; add(5 + 5, add(5, 5))", 20},
 		{"func(x) { x; }(5)", 5},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		testEvalObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestAssignStmts(t *testing.T) {
+	stmts := `
+	var a = 5; 
+	var b = a; 
+	var c = a + b + 5; 
+	a = c; 
+	a;
+	`
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{stmts, 15},
+	}
+	for _, tt := range tests {
+		evaluated, err := testEval(tt.input)
+		if nil != err {
+			t.Fatal(err)
+		}
+		testEvalObject(t, evaluated, tt.expected)
+	}
+}
+
+func TestForCases(t *testing.T) {
+	stmts := `
+	var i = 0;
+	var result = 0;
+	for {
+		if (i >= 5) {
+			break;
+		}
+		result = result + i;
+		i = i + 1;
+	}
+	result;
+	`
+
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{stmts, 10},
 	}
 	for _, tt := range tests {
 		evaluated, err := testEval(tt.input)

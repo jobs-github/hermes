@@ -46,6 +46,8 @@ const (
 	IF
 	ELSE
 	RETURN
+	FOR
+	BREAK
 	//keyword_end
 )
 
@@ -72,6 +74,8 @@ var (
 		"if":     IF,
 		"else":   ELSE,
 		"return": RETURN,
+		"for":    FOR,
+		"break":  BREAK,
 	}
 
 	tokenTypeStrings = map[TokenType]string{
@@ -107,6 +111,8 @@ var (
 		IF:        "IF",
 		ELSE:      "ELSE",
 		RETURN:    "RETURN",
+		FOR:       "FOR",
+		BREAK:     "BREAK",
 	}
 )
 

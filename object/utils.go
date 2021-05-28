@@ -11,6 +11,7 @@ const (
 	ObjectTypeNull
 	ObjectTypeReturnValue
 	ObjectTypeFunction
+	ObjectTypeBreakObject
 )
 
 var (
@@ -26,6 +27,7 @@ var (
 		ObjectTypeNull:        "null",
 		ObjectTypeReturnValue: "return_value",
 		ObjectTypeFunction:    "function",
+		ObjectTypeBreakObject: "break_object",
 	}
 )
 

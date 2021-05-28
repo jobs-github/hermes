@@ -26,8 +26,8 @@ func (this *PrefixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *PrefixExpression) Eval(env *object.Env) (object.Object, error) {
-	right, err := this.Right.Eval(env)
+func (this *PrefixExpression) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	right, err := this.Right.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("PrefixExpression.Eval -> this.Right.Eval() error | %v", err)
 	}

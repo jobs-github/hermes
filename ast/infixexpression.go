@@ -30,12 +30,12 @@ func (this *InfixExpression) String() string {
 	out.WriteString(")")
 	return out.String()
 }
-func (this *InfixExpression) Eval(env *object.Env) (object.Object, error) {
-	left, err := this.Left.Eval(env)
+func (this *InfixExpression) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	left, err := this.Left.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("InfixExpression.Eval -> this.Left.Eval() error | %v", err)
 	}
-	right, err := this.Right.Eval(env)
+	right, err := this.Right.Eval(env, insideLoop)
 	if nil != err {
 		return nil, fmt.Errorf("InfixExpression.Eval -> this.Right.Eval() error | %v", err)
 	}

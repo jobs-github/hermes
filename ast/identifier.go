@@ -19,7 +19,7 @@ func (this *Identifier) TokenLiteral() string {
 func (this *Identifier) String() string {
 	return this.Value
 }
-func (this *Identifier) Eval(env *object.Env) (object.Object, error) {
+func (this *Identifier) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	val, ok := env.Get(this.Value)
 	if !ok {
 		return nil, fmt.Errorf("Identifier.Eval -> `%v` not found", this.Value)

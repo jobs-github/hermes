@@ -18,6 +18,6 @@ func (this *Boolean) TokenLiteral() string {
 func (this *Boolean) String() string {
 	return this.Tok.Literal
 }
-func (this *Boolean) Eval(env *object.Env) (object.Object, error) {
+func (this *Boolean) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
 	return object.ToBoolean(this.Value), nil
 }

@@ -9,7 +9,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
-	Eval(env *object.Env) (object.Object, error)
+	Eval(env *object.Env, insideLoop bool) (object.Object, error)
 }
 
 type Statement interface {
@@ -24,10 +24,10 @@ type Expression interface {
 
 type ExpressionSlice []Expression
 
-func (this *ExpressionSlice) evalArgs(env *object.Env) ([]object.Object, error) {
+func (this *ExpressionSlice) evalArgs(env *object.Env, insideLoop bool) ([]object.Object, error) {
 	result := []object.Object{}
 	for _, expr := range *this {
-		evaluated, err := expr.Eval(env)
+		evaluated, err := expr.Eval(env, insideLoop)
 		if nil != err {
 			return nil, fmt.Errorf("ExpressionSlice.eval | %v", err)
 		}
@@ -38,19 +38,30 @@ func (this *ExpressionSlice) evalArgs(env *object.Env) ([]object.Object, error) 
 
 type StatementSlice []Statement
 
-func evalStatements(env *object.Env, stmts StatementSlice, blockStmts bool) (object.Object, error) {
+func (this *StatementSlice) eval(isBlockStmts bool, env *object.Env, insideLoop bool) (object.Object, error) {
 	var result object.Object
-	for _, stmt := range stmts {
-		if v, err := stmt.Eval(env); nil != err {
+	for _, stmt := range *this {
+		if v, err := stmt.Eval(env, insideLoop); nil != err {
 			return nil, fmt.Errorf("evalStatements | %v", err)
 		} else {
 			if needReturn, returnValue := v.Return(); needReturn {
-				if blockStmts {
+				if isBlockStmts {
 					// it stops execution in a possible deeper block statement and bubbles up to Program.Eval
 					// where it finally get's unwrapped
 					return v, nil
 				} else {
 					return returnValue, nil
+				}
+			}
+			if insideLoop {
+				isBreak, _ := v.Break()
+				if isBreak {
+					return v, nil
+				}
+			} else { // outside loop
+				isBreak, breakCount := v.Break()
+				if isBreak && 1 == breakCount { // orginal break
+					return nil, fmt.Errorf("evalStatements -> 'break' outside loop")
 				}
 			}
 			result = v

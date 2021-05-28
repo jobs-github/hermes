@@ -21,6 +21,6 @@ func (this *ExpressionStmt) String() string {
 	}
 	return ""
 }
-func (this *ExpressionStmt) Eval(env *object.Env) (object.Object, error) {
-	return this.Expr.Eval(env)
+func (this *ExpressionStmt) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	return this.Expr.Eval(env, insideLoop)
 }

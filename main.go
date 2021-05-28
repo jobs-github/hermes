@@ -36,7 +36,7 @@ func repl(in io.Reader, out io.Writer) {
 			}
 			continue
 		}
-		val, err := program.Eval(env)
+		val, err := program.Eval(env, false)
 		if nil != err {
 			io.WriteString(out, err.Error())
 			io.WriteString(out, "\n")

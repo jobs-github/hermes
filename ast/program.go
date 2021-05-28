@@ -25,6 +25,6 @@ func (this *Program) String() string {
 	return out.String()
 }
 
-func (this *Program) Eval(env *object.Env) (object.Object, error) {
-	return evalStatements(env, this.Stmts, false)
+func (this *Program) Eval(env *object.Env, insideLoop bool) (object.Object, error) {
+	return this.Stmts.eval(false, env, false)
 }

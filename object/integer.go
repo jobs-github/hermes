@@ -34,7 +34,7 @@ func (this *Integer) Calc(op *token.Token, right Object) (Object, error) {
 	return right.calcInteger(op, this)
 }
 
-func (this *Integer) Call(args []Object) (Object, error) {
+func (this *Integer) Call(args []Object, insideLoop bool) (Object, error) {
 	return nil, fmt.Errorf("Integer.Call -> unsupported")
 }
 
@@ -47,6 +47,10 @@ func (this *Integer) True() bool {
 
 func (this *Integer) Return() (bool, Object) {
 	return false, nil
+}
+
+func (this *Integer) Break() (bool, int) {
+	return false, 0
 }
 
 func (this *Integer) calcInteger(op *token.Token, left *Integer) (Object, error) {
